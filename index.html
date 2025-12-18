@@ -176,7 +176,8 @@
             if(mins >= 60) { mins = "00"; hour += 1; }
             const end = `${dateParts}T${hour.toString().padStart(2, '0')}${mins.toString().padStart(2, '0')}00`;
 
-            const location = encodeURIComponent("502 barber studio málaga calle mármoles 41 29007");
+            const location = encodeURIComponent("502 Barber Studio, C. Mármoles, 41, Distrito Centro, 29007 Málaga, España
+ ");
             const details = encodeURIComponent(`Reserva para ${d.nombre}.\nServicio: ${d.servicio}`);
             const title = encodeURIComponent("Cita 502 Barber Studio");
 
