@@ -11,10 +11,8 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
-        /* Notas: Estilo minimalista para los inputs */
         input, select { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
-        /* Notas: Animación de entrada para la confirmación */
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
@@ -109,22 +107,19 @@
     </div>
 
     <script>
-        // Notas: URL de tu Script de Google
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
 
         const fechaInput = document.getElementById('fecha');
         const hoy = new Date().toISOString().split('T')[0];
         
-        // --- INICIALIZACIÓN DE LA WEB ---
-        // Notas: Al cargar, ponemos la fecha de hoy y pedimos los horarios libres
+        // Inicialización
         window.onload = () => {
             fechaInput.setAttribute('min', hoy);
             fechaInput.value = hoy;
             cargarHorarios(hoy);
         };
 
-        // --- FUNCIÓN: CONSULTAR DISPONIBILIDAD ---
-        // Notas: Filtra horarios pasados si es el día de hoy
+        // Función para consultar disponibilidad
         async function cargarHorarios(fechaSel) {
             const select = document.getElementById('hora');
             select.innerHTML = '<option value="">Consultando...</option>';
@@ -148,14 +143,14 @@
                     const deshabilitar = estaOcupada || esPasada;
                     return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
                 }).join('');
-            } catch (e) { select.innerHTML = '<option value="">Error al cargar</option>'; }
+            } catch (e) { 
+                select.innerHTML = '<option value="">Error al cargar</option>'; 
+            }
         }
 
-        // Notas: Actualizar horas cuando el usuario cambia la fecha
         fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
 
-        // --- FUNCIÓN: CONFIRMAR RESERVA ---
-        // Notas: Valida los campos, envía al servidor y prepara la vista de éxito
+        // Función para enviar la reserva
         async function confirmarCita() {
             const btn = document.getElementById('btn-reserva');
             const d = {
@@ -167,21 +162,20 @@
                 email: document.getElementById('email').value.trim()
             };
 
-            // Validación de teléfono (9 números o prefijo +)
+            // Validación teléfono (9 números o prefijo +)
             const phoneRegex = /^(\+\d+)?\d{9}$/;
             if (!phoneRegex.test(d.telefono)) return alert("Introduce un teléfono válido.");
 
-            if(!d.nombre || !d.fecha || !d.hora || d.hora === "" || d.hora.includes("Consultando")) {
+            if(!d.nombre || !d.fecha || d.hora === "" || d.hora.includes("Consultando")) {
                 return alert("Completa todos los campos obligatorios.");
             }
             
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
             
             try {
-                // Envío de datos al GS (activará el envío del email automático)
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
                 
-                // Mostrar resumen en pantalla
+                // Rellenar datos en vista éxito
                 document.getElementById('res-servicio').innerText = d.servicio;
                 document.getElementById('res-fecha').innerText = d.fecha;
                 document.getElementById('res-hora').innerText = d.hora + " HS";
@@ -189,11 +183,11 @@
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
                 
-                // Notas: Configuración enlace WhatsApp para cancelar
+                // CONFIGURACIÓN WHATSAPP (Asegurado número 34640080146)
                 const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${d.fecha} a las ${d.hora}.`);
                 document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${mensajeWa}`;
 
-                // Notas: Configuración Google Calendar con dirección Calle Mármoles 41
+                // CONFIGURACIÓN GOOGLE CALENDAR
                 const dateParts = d.fecha.replace(/-/g, '');
                 const timeParts = d.hora.replace(':', '');
                 const start = `${dateParts}T${timeParts}00`;
@@ -203,7 +197,7 @@
                 const end = `${dateParts}T${endHour.toString().padStart(2,'0')}${endMin.toString().padStart(2,'0')}00`;
                 
                 const gLocation = encodeURIComponent("502 Barber Studio, Calle Mármoles 41, 29007 Málaga");
-                const gTitle = encodeURIComponent("Mi Cita en 502 Barber Studio");
+                const gTitle = encodeURIComponent("Cita 502 Barber Studio");
 
                 document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gTitle}&dates=${start}/${end}&location=${gLocation}`;
                 
