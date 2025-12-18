@@ -5,138 +5,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <title>Dashboard Admin - 502 Barber Studio</title>
+    <title>502 Admin - Dashboard</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
-        .card { background: white; border: 1px solid #000; }
+        .card-admin { background: white; border: 1px solid #000; transition: all 0.3s ease; }
+        .btn-tab { border: 1px solid #000; font-[10px]; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.2s; }
         .tab-active { background: black; color: white; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-10">
     <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-8 border-b-2 border-black pb-6">
+        
+        <header class="flex justify-between items-center mb-10 border-b-2 border-black pb-8">
             <div>
-                <h1 class="text-3xl font-800 uppercase tracking-tighter">502 Admin</h1>
-                <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-bold">Gestión de Agenda — Óscar Mejicanos</p>
+                <h1 class="text-4xl font-800 tracking-tighter uppercase">502 Admin</h1>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold italic">Control de Agenda - Óscar Mejicanos</p>
             </div>
-            <button onclick="cargarAgenda()" class="p-2 border border-black hover:bg-black hover:text-white transition-all">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <button onclick="cargarAgenda()" class="hover:rotate-180 transition-transform duration-500 p-2 border border-black rounded-full">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-            <div class="card p-6 flex flex-col justify-center items-center">
-                <p class="text-[9px] uppercase font-bold text-gray-400 mb-1 tracking-widest">Citas Hoy</p>
-                <p id="total-citas-hoy" class="text-3xl font-800">0</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="card-admin p-6 text-center">
+                <p class="text-[9px] uppercase font-bold tracking-widest text-gray-400 mb-2">Citas Hoy</p>
+                <p id="total-citas" class="text-4xl font-800">0</p>
             </div>
-            <div class="card p-6 flex flex-col justify-center items-center bg-black text-white">
-                <p class="text-[9px] uppercase font-bold text-gray-500 mb-1 tracking-widest">Ingresos Hoy (Est.)</p>
-                <p id="caja-hoy" class="text-3xl font-800">0.00€</p>
+            <div class="card-admin p-6 text-center bg-black text-white shadow-xl scale-105">
+                <p class="text-[9px] uppercase font-bold tracking-widest text-gray-500 mb-2">Caja Estimada Hoy</p>
+                <p id="ingresos-hoy" class="text-4xl font-800">0€</p>
             </div>
-            <div class="card p-6 flex flex-col justify-center items-center">
-                <p class="text-[9px] uppercase font-bold text-gray-400 mb-1 tracking-widest">Próxima Cita</p>
-                <p id="proxima-hora" class="text-xl font-800 italic">--:--</p>
+            <div class="card-admin p-6 text-center">
+                <p class="text-[9px] uppercase font-bold tracking-widest text-gray-400 mb-2">Próximo Cliente</p>
+                <p id="proxima-cita" class="text-2xl font-800 italic">--:--</p>
             </div>
         </div>
 
-        <div class="flex gap-2 mb-6">
-            <button id="filter-today" onclick="setFilter('today')" class="text-[10px] font-bold uppercase tracking-widest px-6 py-2 border border-black tab-active transition-all">Solo Hoy</button>
-            <button id="filter-all" onclick="setFilter('all')" class="text-[10px] font-bold uppercase tracking-widest px-6 py-2 border border-black transition-all">Historial Total</button>
+        <div class="flex gap-4 mb-8">
+            <button id="btn-hoy" onclick="cambiarFiltro('today')" class="btn-tab px-8 py-3 tab-active">Solo Hoy</button>
+            <button id="btn-todos" onclick="cambiarFiltro('all')" class="btn-tab px-8 py-3">Historial Completo</button>
         </div>
 
-        <div class="bg-white border border-gray-200 overflow-hidden shadow-sm">
-            <div id="loading-agenda" class="p-10 text-center text-xs uppercase tracking-[0.2em] text-gray-400">Accediendo a la base de datos...</div>
+        <div class="bg-white border border-gray-100 shadow-sm overflow-hidden">
+            <div id="loading" class="p-20 text-center uppercase text-[10px] tracking-[0.5em] text-gray-300 font-bold">Sincronizando con base de datos...</div>
             
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-gray-50 text-[9px] uppercase tracking-[0.2em] text-gray-500 border-b border-gray-100">
-                        <th class="p-4 font-bold">Fecha / Hora</th>
-                        <th class="p-4 font-bold">Cliente / Teléfono</th>
-                        <th class="p-4 font-bold">Servicio</th>
-                        <th class="p-4 font-bold text-right">Gestión</th>
+                    <tr class="bg-gray-50 text-[9px] uppercase tracking-widest text-gray-500 border-b border-gray-100 font-bold">
+                        <th class="p-5">Horario</th>
+                        <th class="p-5">Cliente / Contacto</th>
+                        <th class="p-5">Servicio</th>
+                        <th class="p-5 text-right">Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="cuerpo-agenda" class="divide-y divide-gray-100">
+                <tbody id="lista-citas" class="divide-y divide-gray-100">
                     </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; // <--- PEGA TU URL AQUÍ
+        const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec';
         let todasLasCitas = [];
         let filtroActual = 'today';
 
-        // Precios para el cálculo de caja
+        // Configuración de precios para el cálculo automático
         const precios = {
             "Corte y lavado": 13,
-            "Corte + barba": 17,
-            "Arreglo barba": 7
+            "Corte + barba + peinado": 17,
+            "Arreglo de barba": 7
+        };
+
+        // Seguridad básica al entrar
+        window.onload = () => {
+            const pass = prompt("Contraseña de acceso 502:");
+            if(pass === "502admin") { cargarAgenda(); } 
+            else { document.body.innerHTML = "<p class='p-20 text-center uppercase tracking-widest'>Acceso No Autorizado</p>"; }
         };
 
         async function cargarAgenda() {
+            document.getElementById('loading').style.display = 'block';
             try {
-                const res = await fetch(`${urlScript}?action=getAppointments`);
-                todasLasCitas = await res.json();
-                document.getElementById('loading-agenda').style.display = 'none';
-                renderizarAgenda();
-            } catch (e) {
-                document.getElementById('loading-agenda').innerText = "Error de conexión con Google Sheets";
+                const response = await fetch(`${urlScript}?action=getAppointments`);
+                todasLasCitas = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                renderizarUI();
+            } catch (error) {
+                alert("Error de conexión con la BBDD");
             }
         }
 
-        function setFilter(filter) {
-            filtroActual = filter;
-            document.getElementById('filter-today').classList.toggle('tab-active', filter === 'today');
-            document.getElementById('filter-all').classList.toggle('tab-active', filter === 'all');
-            renderizarAgenda();
+        function cambiarFiltro(f) {
+            filtroActual = f;
+            document.getElementById('btn-hoy').classList.toggle('tab-active', f === 'today');
+            document.getElementById('btn-todos').classList.toggle('tab-active', f === 'all');
+            renderizarUI();
         }
 
-        function renderizarAgenda() {
+        function renderizarUI() {
             const hoy = new Date().toISOString().split('T')[0];
-            const cuerpo = document.getElementById('cuerpo-agenda');
+            const cuerpo = document.getElementById('lista-citas');
             
-            // Filtrar citas
-            const citasFiltradas = todasLasCitas.filter(cita => {
-                return filtroActual === 'all' ? true : cita[5] === hoy;
-            });
-
-            // Calcular Métricas de HOY (independientemente del filtro visual)
-            const citasHoy = todasLasCitas.filter(cita => cita[5] === hoy);
-            let ingresosHoy = 0;
-            citasHoy.forEach(cita => {
-                // Buscamos el precio según el nombre del servicio
-                const serv = cita[4];
-                if (precios[serv]) ingresosHoy += precios[serv];
-            });
-
-            document.getElementById('total-citas-hoy').innerText = citasHoy.length;
-            document.getElementById('caja-hoy').innerText = ingresosHoy.toFixed(2) + "€";
+            // 1. Filtrar citas
+            const citasFiltradas = todasLasCitas.filter(c => filtroActual === 'all' ? true : c[5] === hoy);
             
-            // Próxima hora hoy
-            const proximas = citasHoy.filter(c => c[6] > new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})).sort((a,b) => a[6] > b[6] ? 1 : -1);
-            document.getElementById('proxima-hora').innerText = proximas.length > 0 ? proximas[0][6] : "--:--";
+            // 2. Calcular Métricas
+            const citasHoy = todasLasCitas.filter(c => c[5] === hoy);
+            let totalCaja = 0;
+            citasHoy.forEach(c => { if(precios[c[4]]) totalCaja += precios[c[4]]; });
 
-            // Dibujar Tabla
+            document.getElementById('total-citas').innerText = citasHoy.length;
+            document.getElementById('ingresos-hoy').innerText = totalCaja + "€";
+            
+            // Calcular próxima cita
+            const ahora = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', hour12:false});
+            const proximas = citasHoy.filter(c => c[6] > ahora).sort((a,b) => a[6] > b[6] ? 1 : -1);
+            document.getElementById('proxima-cita').innerText = proximas.length > 0 ? proximas[0][6] : "--:--";
+
+            // 3. Generar Tabla
             cuerpo.innerHTML = citasFiltradas.reverse().map(cita => `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="p-4">
-                        <span class="text-[10px] font-bold block">${cita[5]}</span>
-                        <span class="text-sm font-800">${cita[6]}</span>
+                <tr class="hover:bg-gray-50 transition-colors group">
+                    <td class="p-5">
+                        <span class="text-[10px] font-bold block text-gray-400 uppercase tracking-tighter">${cita[5]}</span>
+                        <span class="text-lg font-800">${cita[6]}</span>
                     </td>
-                    <td class="p-4">
-                        <span class="text-xs font-bold uppercase block">${cita[1]}</span>
-                        <span class="text-[10px] text-gray-400">${cita[2]}</span>
+                    <td class="p-5">
+                        <span class="text-xs font-bold uppercase block tracking-tight">${cita[1]}</span>
+                        <span class="text-[10px] text-gray-400 font-medium">${cita[2]}</span>
                     </td>
-                    <td class="p-4">
-                        <span class="text-[10px] px-2 py-1 bg-gray-100 uppercase font-bold">${cita[4]}</span>
+                    <td class="p-5">
+                        <span class="text-[9px] px-2 py-1 border border-black uppercase font-bold italic">${cita[4]}</span>
                     </td>
-                    <td class="p-4 text-right space-x-2">
-                        <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="inline-block border border-black p-2 hover:bg-black hover:text-white transition-all">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.48s3.481 5.229 3.481 8.405c0 6.555-5.332 11.89-11.888 11.89-2.013 0-3.991-.51-5.753-1.479l-6.231 1.69zm6.262-3.693c1.543.918 3.541 1.458 5.617 1.458 5.48 0 9.939-4.458 9.939-9.938 0-5.48-4.459-9.939-9.939-9.939-5.48 0-9.938 4.459-9.938 9.939 0 2.214.73 4.303 2.08 6.035l-1.096 4.001 4.135-1.127z"/></svg>
+                    <td class="p-5 text-right space-x-2">
+                        <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="inline-block p-2 border border-black hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.168.823-.33.05-.654.085-1.747-.336-1.42-.549-2.336-1.992-2.407-2.087-.071-.094-.614-.817-.614-1.558 0-.741.387-1.107.525-1.258.137-.152.3-.19.4-.19.1 0 .201.001.289.004.09.003.212-.034.331.253.123.296.423 1.031.46 1.107.037.076.061.165.011.266-.05.101-.076.165-.152.253-.076.089-.159.198-.227.266-.076.076-.156.158-.067.31.089.152.396.654.851 1.06.585.52 1.077.681 1.23.757.152.076.241.063.33-.038.089-.101.383-.445.484-.596.101-.152.203-.127.343-.076.14.051.888.419 1.041.495.152.076.253.114.291.177.038.063.038.368-.106.773z"/></svg>
                         </a>
-                        <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white transition-all">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <button onclick="cancelarCita('${cita[7]}')" class="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </td>
                 </tr>
@@ -144,16 +149,13 @@
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Deseas anular esta cita? Esto la borrará del Calendario y liberará el hueco.")) return;
+            if(!confirm("¿Deseas anular la cita y borrarla de Google Calendar?")) return;
+            
+            // Optimismo: Quitar la fila de la vista antes de que el servidor responda
+            todasLasCitas = todasLasCitas.filter(c => c[7] !== id);
+            renderizarUI();
+
             await fetch(urlScript, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'cancel', eventId: id })
             });
-            cargarAgenda();
-        }
-
-        // Carga inicial
-        cargarAgenda();
-    </script>
-</body>
-</html>
