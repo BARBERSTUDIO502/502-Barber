@@ -10,8 +10,11 @@
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
         input, select { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
+        /* Animación para la confirmación */
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Estilo para las imágenes de ImgBB */
+        .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-0 md:p-10">
@@ -26,9 +29,15 @@
             </header>
 
             <div class="grid grid-cols-3 gap-2 md:gap-4 mb-10 w-full">
-                <img src="https://lh3.googleusercontent.com/p/AF1QipNqY6XW0Y_r5yR3" class="w-full h-24 md:h-48 object-cover border border-white/10 grayscale hover:grayscale-0 transition-all duration-700" alt="Studio 1">
-                <img src="https://lh3.googleusercontent.com/p/AF1QipM4V8L_x_fR7yS1" class="w-full h-24 md:h-48 object-cover border border-white/10 grayscale hover:grayscale-0 transition-all duration-700" alt="Studio 2">
-                <img src="https://lh3.googleusercontent.com/p/AF1QipO9_G_S6X_Z8yQ2" class="w-full h-24 md:h-48 object-cover border border-white/10 grayscale hover:grayscale-0 transition-all duration-700" alt="Studio 3">
+                <div class="img-card h-24 md:h-48 border border-white/10">
+                    <img src="https://i.ibb.co/KjpsTc53/image.jpg" onerror="this.src='https://placehold.co/400x600/000000/FFFFFF?text=Studio+1'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                </div>
+                <div class="img-card h-24 md:h-48 border border-white/10">
+                    <img src="https://i.ibb.co/XxfJbzJZ/image.jpg" onerror="this.src='https://placehold.co/400x600/000000/FFFFFF?text=Studio+2'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                </div>
+                <div class="img-card h-24 md:h-48 border border-white/10">
+                    <img src="https://i.ibb.co/ym6ryz0K/image.jpg" onerror="this.src='https://placehold.co/400x600/000000/FFFFFF?text=Studio+3'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                </div>
             </div>
 
             <div class="flex gap-8">
@@ -39,144 +48,3 @@
                     <svg class="w-7 h-7" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                 </a>
             </div>
-        </div>
-
-        <div class="w-full md:w-1/2 p-10 md:p-16 bg-white flex flex-col justify-center">
-            
-            <div id="vista-formulario">
-                <h3 class="text-2xl font-800 uppercase tracking-tighter mb-10 text-center md:text-left">Reservar Cita</h3>
-                <div class="space-y-8">
-                    <div class="relative">
-                        <input type="text" id="nombre" placeholder="Nombre completo" class="w-full py-3 text-sm bg-transparent placeholder-gray-300">
-                    </div>
-
-                    <div class="relative">
-                        <input type="tel" id="telefono" placeholder="Teléfono (9 dígitos o con +)" class="w-full py-3 text-sm bg-transparent placeholder-gray-300">
-                    </div>
-
-                    <select id="servicio" class="w-full py-3 text-sm bg-transparent">
-                        <option value="Corte y lavado">Corte y lavado — 13€</option>
-                        <option value="Corte + barba">Corte + barba — 17€</option>
-                        <option value="Arreglo barba">Arreglo barba — 7€</option>
-                    </select>
-
-                    <div class="grid grid-cols-2 gap-6">
-                        <input type="date" id="fecha" class="w-full py-3 text-sm bg-transparent">
-                        <select id="hora" class="w-full py-3 text-sm bg-transparent italic font-bold">
-                            <option>Hora</option>
-                        </select>
-                    </div>
-
-                    <input type="email" id="email" placeholder="Email para confirmación" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
-                    
-                    <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl hover:bg-zinc-800 mt-6">Confirmar ahora</button>
-                </div>
-            </div>
-
-            <div id="vista-exito" class="hidden text-center flex-grow flex flex-col justify-center items-center">
-                <div class="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center text-4xl mb-8 shadow-2xl">✓</div>
-                <h2 class="text-4xl font-800 uppercase tracking-tighter mb-4">Confirmada</h2>
-                <p id="info-resumen" class="text-xs uppercase tracking-[0.2em] text-gray-500 mb-12 leading-loose px-4"></p>
-                
-                <div class="w-full space-y-4">
-                    <a id="link-gcal" target="_blank" class="block w-full border-2 border-black bg-black text-white py-5 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all">Añadir a Google Calendar</a>
-                    <button onclick="location.reload()" class="text-[10px] uppercase tracking-[0.2em] text-gray-400 underline hover:text-black">Nueva reserva</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <script>
-    const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
-
-    // --- RESTRICCIÓN DE FECHA MÍNIMA ---
-    const hoyDate = new Date();
-    const hoyStr = hoyDate.toISOString().split('T')[0];
-    document.getElementById('fecha').setAttribute('min', hoyStr);
-
-    // --- CARGA DE HORARIOS Y FILTRO DE TIEMPO REAL ---
-    document.getElementById('fecha').addEventListener('change', async (e) => {
-        const select = document.getElementById('hora');
-        const fechaSel = e.target.value;
-        select.innerHTML = '<option>...</option>';
-
-        try {
-            const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
-            const ocupadas = await res.json();
-            
-            const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-            
-            const ahora = new Date();
-            const esHoy = fechaSel === hoyStr;
-            const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
-
-            select.innerHTML = horarios.map(h => {
-                const [h_hora, h_min] = h.split(':').map(Number);
-                const minutosOpcion = (h_hora * 60) + h_min;
-                
-                const estaOcupada = ocupadas.includes(h);
-                const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15); // 15 min de margen
-                
-                const deshabilitar = estaOcupada || esPasada;
-                const texto = estaOcupada ? `${h} (Ocupado)` : (esPasada ? `${h} (N/A)` : h);
-                
-                return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${texto}</option>`;
-            }).join('');
-
-        } catch (e) { select.innerHTML = '<option>Error</option>'; }
-    });
-
-    // --- PROCESAR RESERVA ---
-    async function confirmarCita() {
-        const btn = document.getElementById('btn-reserva');
-        const d = {
-            nombre: document.getElementById('nombre').value.trim(),
-            telefono: document.getElementById('telefono').value.trim(),
-            servicio: document.getElementById('servicio').value,
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            email: document.getElementById('email').value.trim()
-        };
-
-        // VALIDACIÓN DE TELÉFONO (9 dígitos o con prefijo)
-        const phoneRegex = /^(\+\d+)?\d{9}$/;
-        if (!phoneRegex.test(d.telefono)) return alert("El teléfono debe tener 9 números (puedes incluir prefijo +)");
-
-        if(!d.nombre || !d.fecha || d.hora.length < 3) return alert("Completa todos los datos");
-        
-        btn.innerText = "PROCESANDO RESERVA..."; btn.disabled = true;
-        
-        try {
-            await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-            
-            document.getElementById('vista-formulario').classList.add('hidden');
-            document.getElementById('vista-exito').classList.remove('hidden');
-            document.getElementById('info-resumen').innerHTML = `<strong>${d.servicio}</strong><br>${d.fecha} — ${d.hora} HORAS`;
-            
-            // GOOGLE CALENDAR (Dirección completa solicitada)
-            const dateParts = d.fecha.replace(/-/g, '');
-            const timeParts = d.hora.replace(':', '');
-            const start = `${dateParts}T${timeParts}00`;
-            
-            // Calcular fin (+30 min)
-            let hour = parseInt(d.hora.split(':')[0]);
-            let mins = parseInt(d.hora.split(':')[1]) + 30;
-            if(mins >= 60) { mins = "00"; hour += 1; }
-            const end = `${dateParts}T${hour.toString().padStart(2, '0')}${mins.toString().padStart(2, '0')}00`;
-
-            const location = encodeURIComponent("502 Barber Studio, Calle Mármoles 41, 29007 Málaga");
-            const details = encodeURIComponent(`Cita con Óscar Mejicanos.\nServicio: ${d.servicio}\nTeléfono: ${d.telefono}`);
-            const title = encodeURIComponent("Cita en 502 Barber Studio");
-
-            document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
-            
-        } catch (e) { 
-            alert("Error de conexión"); 
-            btn.disabled = false; 
-            btn.innerText = "Confirmar ahora";
-        }
-    }
-    </script>
-</body>
-</html>
