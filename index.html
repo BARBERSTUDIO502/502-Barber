@@ -60,8 +60,7 @@
                     <input type="tel" id="telefono" placeholder="Teléfono" class="w-full py-3 text-sm bg-transparent border-none">
 
                     <select id="servicio" class="w-full py-3 text-sm bg-transparent">
-                        <option value="">Selecciona un servicio</option>
-                        <option value="Corte y lavado">Corte y lavado — 13€</option>
+                        <option value="Corte y lavado" selected>Corte y lavado — 13€</option>
                         <option value="Corte + barba">Corte + barba — 17€</option>
                         <option value="Arreglo barba">Arreglo barba — 7€</option>
                     </select>
@@ -160,24 +159,22 @@
                 email: document.getElementById('email').value.trim()
             };
 
-            // --- VALIDACIONES DE CAMPOS OBLIGATORIOS ---
+            // VALIDACIONES
             if (!d.nombre) return alert("Por favor, introduce tu nombre completo.");
-
+            
             const phoneRegex = /^(\+\d+)?\d{9}$/;
             if (!phoneRegex.test(d.telefono)) return alert("Por favor, introduce un teléfono válido (9 dígitos).");
-
+            
             if (!d.servicio) return alert("Por favor, selecciona un servicio.");
-
+            
             if (!d.fecha) return alert("Por favor, selecciona una fecha.");
-
+            
             if (!d.hora || d.hora === "" || d.hora.includes("Consultando")) {
                 return alert("Por favor, selecciona una hora válida.");
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(d.email)) return alert("Por favor, introduce un correo electrónico válido para enviarte el justificante.");
-            
-            // --- FIN VALIDACIONES ---
+            if (!emailRegex.test(d.email)) return alert("Por favor, introduce un correo electrónico válido.");
 
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
             
