@@ -28,15 +28,15 @@
                 <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-500 font-bold mt-8 italic">Óscar Mejicanos</p>
             </header>
 
-            <div class="grid grid-cols-3 gap-2 md:gap-4 mb-10 w-full">
-                <div class="img-card h-24 md:h-48 border border-white/10">
-                    <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Barbería foto 1">
+            <div class="grid grid-cols-3 gap-3 md:gap-4 mb-10 w-full">
+                <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
+                    <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería foto 1">
                 </div>
-                <div class="img-card h-24 md:h-48 border border-white/10">
-                    <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Barbería foto 2">
+                <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
+                    <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería foto 2">
                 </div>
-                <div class="img-card h-24 md:h-48 border border-white/10">
-                    <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt="Barbería foto 3">
+                <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
+                    <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería foto 3">
                 </div>
             </div>
 
@@ -95,14 +95,16 @@
     <script>
     const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
 
-    // --- RESTRICCIÓN DE FECHA MÍNIMA (HOY) ---
+    // --- CONFIGURACIÓN DE FECHA INICIAL (HOY) ---
+    const fechaInput = document.getElementById('fecha');
     const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('fecha').setAttribute('min', hoy);
+    
+    fechaInput.setAttribute('min', hoy); // No se puede reservar antes de hoy
+    fechaInput.value = hoy;               // PRECARGAR FECHA DE HOY
 
-    // --- CARGAR HORAS Y FILTRAR PASADAS ---
-    document.getElementById('fecha').addEventListener('change', async (e) => {
+    // Función para cargar horarios según la fecha
+    async function cargarHorarios(fechaSel) {
         const select = document.getElementById('hora');
-        const fechaSel = e.target.value;
         select.innerHTML = '<option>Cargando...</option>';
 
         try {
@@ -113,20 +115,28 @@
             
             const ahora = new Date();
             const esHoy = fechaSel === hoy;
-            // Damos 15 min de margen para no reservar algo que ya está empezando
             const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
 
             select.innerHTML = horarios.map(h => {
                 const [h_hora, h_min] = h.split(':').map(Number);
                 const minutosOpcion = (h_hora * 60) + h_min;
                 const estaOcupada = ocupadas.includes(h);
+                // Bloquear horas que ya han pasado hoy (margen 15 min)
                 const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
                 const deshabilitar = estaOcupada || esPasada;
                 
                 return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
             }).join('');
-        } catch (e) { select.innerHTML = '<option>Error</option>'; }
-    });
+        } catch (e) { 
+            select.innerHTML = '<option>Error</option>'; 
+        }
+    }
+
+    // Cargar horas de hoy automáticamente al abrir la página
+    cargarHorarios(hoy);
+
+    // Escuchar cambios de fecha para actualizar horas
+    fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
 
     // --- PROCESAR RESERVA ---
     async function confirmarCita() {
@@ -140,11 +150,12 @@
             email: document.getElementById('email').value.trim()
         };
 
-        // 1. VALIDACIÓN TELÉFONO (9 números o con prefijo)
         const phoneRegex = /^(\+\d+)?\d{9}$/;
         if (!phoneRegex.test(d.telefono)) return alert("El teléfono debe tener 9 números (ej: 600000000)");
 
-        if(!d.nombre || !d.fecha || d.hora.includes("--")) return alert("Completa todos los datos");
+        if(!d.nombre || !d.fecha || d.hora.includes("--") || d.hora.includes("Cargando")) {
+            return alert("Completa todos los datos correctamente");
+        }
         
         btn.innerText = "PROCESANDO..."; btn.disabled = true;
         
@@ -155,12 +166,11 @@
             document.getElementById('vista-exito').classList.remove('hidden');
             document.getElementById('info-resumen').innerHTML = `<strong>${d.servicio}</strong><br>${d.fecha} — ${d.hora} HS`;
             
-            // 2. GOOGLE CALENDAR (Misma fecha, hora y dirección exacta)
+            // GOOGLE CALENDAR (Dirección exacta y hora dinámica)
             const dateParts = d.fecha.replace(/-/g, '');
             const timeParts = d.hora.replace(':', '');
             const start = `${dateParts}T${timeParts}00`;
             
-            // Calculamos fin (+30 min)
             let hour = parseInt(d.hora.split(':')[0]);
             let mins = parseInt(d.hora.split(':')[1]) + 30;
             if(mins >= 60) { mins = "00"; hour += 1; }
