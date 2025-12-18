@@ -10,10 +10,8 @@
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
         input, select { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
-        /* Animación para la confirmación */
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        /* Estilo contenedor imágenes */
         .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
     </style>
 </head>
@@ -30,18 +28,18 @@
 
             <div class="grid grid-cols-3 gap-3 md:gap-4 mb-10 w-full">
                 <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
-                    <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería foto 1">
+                    <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería 1">
                 </div>
                 <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
-                    <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería foto 2">
+                    <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería 2">
                 </div>
                 <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
-                    <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería foto 3">
+                    <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería 3">
                 </div>
             </div>
 
             <div class="flex gap-8">
-                <a href="https://www.google.com/maps/search/?api=1&query=Calle+Mármoles+41+Málaga" target="_blank" class="hover:scale-125 transition-transform">
+                <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="hover:scale-125 transition-transform">
                     <svg class="w-7 h-7" fill="white" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                 </a>
                 <a href="https://instagram.com/502barberstudio" target="_blank" class="hover:scale-125 transition-transform">
@@ -56,8 +54,7 @@
                 <h3 class="text-2xl font-800 uppercase tracking-tighter mb-10 text-center md:text-left">Reservar Cita</h3>
                 <div class="space-y-8">
                     <input type="text" id="nombre" placeholder="Nombre completo" class="w-full py-3 text-sm bg-transparent border-none">
-                    
-                    <input type="tel" id="telefono" placeholder="Teléfono (9 números o con prefijo)" class="w-full py-3 text-sm bg-transparent border-none">
+                    <input type="tel" id="telefono" placeholder="Teléfono" class="w-full py-3 text-sm bg-transparent border-none">
 
                     <select id="servicio" class="w-full py-3 text-sm bg-transparent">
                         <option value="Corte y lavado">Corte y lavado — 13€</option>
@@ -78,14 +75,36 @@
                 </div>
             </div>
 
-            <div id="vista-exito" class="hidden text-center flex-grow flex flex-col justify-center items-center">
-                <div class="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center text-4xl mb-8">✓</div>
-                <h2 class="text-4xl font-800 uppercase tracking-tighter mb-4">Confirmada</h2>
-                <p id="info-resumen" class="text-xs uppercase tracking-[0.2em] text-gray-500 mb-12 leading-loose"></p>
+            <div id="vista-exito" class="hidden flex flex-col">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
+                    <h2 class="text-3xl font-800 uppercase tracking-tighter">Confirmada</h2>
+                </div>
                 
-                <div class="w-full space-y-4">
-                    <a id="link-gcal" target="_blank" class="block w-full border-2 border-black bg-black text-white py-5 text-[10px] font-bold uppercase tracking-[0.2em]">Añadir a Google Calendar</a>
-                    <button onclick="location.reload()" class="text-[10px] uppercase tracking-widest text-gray-400 underline">Nueva reserva</button>
+                <div class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4">
+                    <p>Estimado cliente,</p>
+                    <p>Le confirmamos que su reserva ha sido registrada correctamente. A continuación, los detalles de su visita:</p>
+                    <ul class="space-y-1 ml-2 font-semibold uppercase text-[11px] tracking-wider">
+                        <li>Servicio: <span id="res-servicio" class="text-black"></span></li>
+                        <li>Día: <span id="res-fecha" class="text-black"></span></li>
+                        <li>Hora: <span id="res-hora" class="text-black"></span></li>
+                        <li>Ubicación: <span class="text-black text-[10px]">C. Mármoles, 41, 29007 Málaga</span></li>
+                    </ul>
+                    <p class="pt-2">Puedes consultar la ruta aquí:</p>
+                    <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="text-black font-bold underline block">📍 Ver ubicación en Google Maps</a>
+                    
+                    <p>Conoce nuestros trabajos:</p>
+                    <a href="https://instagram.com/502barberstudio" target="_blank" class="text-black font-bold underline block">📷 Instagram @502barberstudio</a>
+                    
+                    <p class="text-[10px] italic text-gray-500 pt-4">Rogamos que, en caso de no poder asistir, nos lo comunique con antelación.</p>
+                </div>
+                
+                <div class="w-full space-y-3">
+                    <a id="link-gcal" target="_blank" class="block w-full border-2 border-black bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center">Añadir a Google Calendar</a>
+                    
+                    <a href="https://wa.me/34600000000?text=Hola,%20quisiera%20modificar%20mi%20cita" target="_blank" class="block w-full border-2 border-gray-200 text-gray-800 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-gray-50">Modificar o Cancelar Cita</a>
+                    
+                    <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Nueva reserva</button>
                 </div>
             </div>
 
@@ -95,24 +114,18 @@
     <script>
     const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
 
-    // --- CONFIGURACIÓN DE FECHA INICIAL (HOY) ---
     const fechaInput = document.getElementById('fecha');
     const hoy = new Date().toISOString().split('T')[0];
-    
-    fechaInput.setAttribute('min', hoy); // No se puede reservar antes de hoy
-    fechaInput.value = hoy;               // PRECARGAR FECHA DE HOY
+    fechaInput.setAttribute('min', hoy);
+    fechaInput.value = hoy;
 
-    // Función para cargar horarios según la fecha
     async function cargarHorarios(fechaSel) {
         const select = document.getElementById('hora');
         select.innerHTML = '<option>Cargando...</option>';
-
         try {
             const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
             const ocupadas = await res.json();
-            
             const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-            
             const ahora = new Date();
             const esHoy = fechaSel === hoy;
             const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
@@ -121,24 +134,16 @@
                 const [h_hora, h_min] = h.split(':').map(Number);
                 const minutosOpcion = (h_hora * 60) + h_min;
                 const estaOcupada = ocupadas.includes(h);
-                // Bloquear horas que ya han pasado hoy (margen 15 min)
                 const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
                 const deshabilitar = estaOcupada || esPasada;
-                
                 return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
             }).join('');
-        } catch (e) { 
-            select.innerHTML = '<option>Error</option>'; 
-        }
+        } catch (e) { select.innerHTML = '<option>Error</option>'; }
     }
 
-    // Cargar horas de hoy automáticamente al abrir la página
     cargarHorarios(hoy);
-
-    // Escuchar cambios de fecha para actualizar horas
     fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
 
-    // --- PROCESAR RESERVA ---
     async function confirmarCita() {
         const btn = document.getElementById('btn-reserva');
         const d = {
@@ -150,41 +155,35 @@
             email: document.getElementById('email').value.trim()
         };
 
-        const phoneRegex = /^(\+\d+)?\d{9}$/;
-        if (!phoneRegex.test(d.telefono)) return alert("El teléfono debe tener 9 números (ej: 600000000)");
-
-        if(!d.nombre || !d.fecha || d.hora.includes("--") || d.hora.includes("Cargando")) {
-            return alert("Completa todos los datos correctamente");
-        }
+        if(!d.nombre || !d.fecha || d.hora.includes("--")) return alert("Completa todos los datos");
         
         btn.innerText = "PROCESANDO..."; btn.disabled = true;
         
         try {
             await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
             
+            // Llenar vista éxito
+            document.getElementById('res-servicio').innerText = d.servicio;
+            document.getElementById('res-fecha').innerText = d.fecha;
+            document.getElementById('res-hora').innerText = d.hora + " HS";
+
             document.getElementById('vista-formulario').classList.add('hidden');
             document.getElementById('vista-exito').classList.remove('hidden');
-            document.getElementById('info-resumen').innerHTML = `<strong>${d.servicio}</strong><br>${d.fecha} — ${d.hora} HS`;
             
-            // GOOGLE CALENDAR (Dirección exacta y hora dinámica)
+            // Google Calendar
             const dateParts = d.fecha.replace(/-/g, '');
             const timeParts = d.hora.replace(':', '');
             const start = `${dateParts}T${timeParts}00`;
+            const end = `${dateParts}T${(parseInt(timeParts.substring(0,2))+1)}${timeParts.substring(2,4)}00`;
             
-            let hour = parseInt(d.hora.split(':')[0]);
-            let mins = parseInt(d.hora.split(':')[1]) + 30;
-            if(mins >= 60) { mins = "00"; hour += 1; }
-            const end = `${dateParts}T${hour.toString().padStart(2, '0')}${mins.toString().padStart(2, '0')}00`;
-
-            const location = encodeURIComponent("502 Barber Studio, C. Mármoles, 41, Distrito Centro, 29007 Málaga, España
- ");
-            const details = encodeURIComponent(`Reserva para ${d.nombre}.\nServicio: ${d.servicio}`);
+            const location = encodeURIComponent("502 Barber Studio, C. Mármoles, 41, Distrito Centro, 29007 Málaga, España");
             const title = encodeURIComponent("Cita 502 Barber Studio");
+            const details = encodeURIComponent(`Servicio: ${d.servicio}\nCliente: ${d.nombre}`);
 
             document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
             
         } catch (e) { 
-            alert("Error de conexión"); 
+            alert("Error"); 
             btn.disabled = false; 
             btn.innerText = "Confirmar Reserva";
         }
