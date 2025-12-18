@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
     <title>502 Barber Studio</title>
+
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
         input, select { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
@@ -57,6 +60,7 @@
                     <input type="tel" id="telefono" placeholder="Teléfono" class="w-full py-3 text-sm bg-transparent border-none">
 
                     <select id="servicio" class="w-full py-3 text-sm bg-transparent">
+                        <option value="">Selecciona un servicio</option>
                         <option value="Corte y lavado">Corte y lavado — 13€</option>
                         <option value="Corte + barba">Corte + barba — 17€</option>
                         <option value="Arreglo barba">Arreglo barba — 7€</option>
@@ -65,7 +69,7 @@
                     <div class="grid grid-cols-2 gap-6">
                         <input type="date" id="fecha" class="w-full py-3 text-sm bg-transparent">
                         <select id="hora" class="w-full py-3 text-sm bg-transparent italic font-bold text-center">
-                            <option value="">Consultando...</option>
+                            <option value="">Hora</option>
                         </select>
                     </div>
 
@@ -109,7 +113,6 @@
         const fechaInput = document.getElementById('fecha');
         const hoy = new Date().toISOString().split('T')[0];
         
-        // Función para formatear la fecha a texto humano
         function formatearFechaElegante(fechaStr) {
             const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
             const partes = fechaStr.split("-");
@@ -157,10 +160,25 @@
                 email: document.getElementById('email').value.trim()
             };
 
+            // --- VALIDACIONES DE CAMPOS OBLIGATORIOS ---
+            if (!d.nombre) return alert("Por favor, introduce tu nombre completo.");
+
             const phoneRegex = /^(\+\d+)?\d{9}$/;
-            if (!phoneRegex.test(d.telefono)) return alert("Introduce un teléfono válido.");
-            if(!d.nombre || !d.fecha || d.hora === "" || d.hora.includes("Consultando")) return alert("Completa todos los campos obligatorios.");
+            if (!phoneRegex.test(d.telefono)) return alert("Por favor, introduce un teléfono válido (9 dígitos).");
+
+            if (!d.servicio) return alert("Por favor, selecciona un servicio.");
+
+            if (!d.fecha) return alert("Por favor, selecciona una fecha.");
+
+            if (!d.hora || d.hora === "" || d.hora.includes("Consultando")) {
+                return alert("Por favor, selecciona una hora válida.");
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(d.email)) return alert("Por favor, introduce un correo electrónico válido para enviarte el justificante.");
             
+            // --- FIN VALIDACIONES ---
+
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
             
             try {
@@ -168,10 +186,9 @@
                 
                 const fechaBonita = formatearFechaElegante(d.fecha);
                 
-                // Rellenar vista éxito con formato nuevo
                 document.getElementById('res-servicio').innerText = d.servicio;
                 document.getElementById('res-fecha').innerText = fechaBonita;
-                document.getElementById('res-hora').innerText = d.hora; // Sin "HS"
+                document.getElementById('res-hora').innerText = d.hora;
 
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
