@@ -4,123 +4,156 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <title>502 Barber Studio - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Dashboard Admin - 502 Barber Studio</title>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #fcfcfc; color: #000; }
-        .border-thin { border: 1px solid #000; }
-        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0); }
+        body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
+        .card { background: white; border: 1px solid #000; }
+        .tab-active { background: black; color: white; }
     </style>
 </head>
-<body class="p-6 md:p-12">
-
-    <div class="max-w-6xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-baseline mb-16 border-b-2 border-black pb-8">
+<body class="p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <header class="flex justify-between items-center mb-8 border-b-2 border-black pb-6">
             <div>
-                <h1 class="text-4xl font-800 tracking-tighter uppercase">Dashboard</h1>
-                <p class="text-[11px] uppercase tracking-[0.4em] text-gray-400 font-bold">502 Barber Studio // Óscar Mejicanos</p>
+                <h1 class="text-3xl font-800 uppercase tracking-tighter">502 Admin</h1>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-bold">Gestión de Agenda — Óscar Mejicanos</p>
             </div>
-            <div class="mt-4 md:mt-0 text-left md:text-right">
-                <p class="text-xs font-bold uppercase tracking-widest">Citas para hoy</p>
-                <p id="current-date" class="text-xl font-light italic">Jueves, 18 Dic 2025</p>
-            </div>
+            <button onclick="cargarAgenda()" class="p-2 border border-black hover:bg-black hover:text-white transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+            <div class="card p-6 flex flex-col justify-center items-center">
+                <p class="text-[9px] uppercase font-bold text-gray-400 mb-1 tracking-widest">Citas Hoy</p>
+                <p id="total-citas-hoy" class="text-3xl font-800">0</p>
+            </div>
+            <div class="card p-6 flex flex-col justify-center items-center bg-black text-white">
+                <p class="text-[9px] uppercase font-bold text-gray-500 mb-1 tracking-widest">Ingresos Hoy (Est.)</p>
+                <p id="caja-hoy" class="text-3xl font-800">0.00€</p>
+            </div>
+            <div class="card p-6 flex flex-col justify-center items-center">
+                <p class="text-[9px] uppercase font-bold text-gray-400 mb-1 tracking-widest">Próxima Cita</p>
+                <p id="proxima-hora" class="text-xl font-800 italic">--:--</p>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mb-6">
+            <button id="filter-today" onclick="setFilter('today')" class="text-[10px] font-bold uppercase tracking-widest px-6 py-2 border border-black tab-active transition-all">Solo Hoy</button>
+            <button id="filter-all" onclick="setFilter('all')" class="text-[10px] font-bold uppercase tracking-widest px-6 py-2 border border-black transition-all">Historial Total</button>
+        </div>
+
+        <div class="bg-white border border-gray-200 overflow-hidden shadow-sm">
+            <div id="loading-agenda" class="p-10 text-center text-xs uppercase tracking-[0.2em] text-gray-400">Accediendo a la base de datos...</div>
             
-            <div class="lg:col-span-4 space-y-12">
-                <section>
-                    <h3 class="text-[11px] font-900 uppercase tracking-[0.3em] mb-6 flex items-center">
-                        <span class="w-2 h-2 bg-black mr-2"></span> Bloquear Jornada
-                    </h3>
-                    <div class="space-y-4">
-                        <div class="border-b border-black pb-2">
-                            <label class="block text-[9px] uppercase font-bold text-gray-400 mb-2">Seleccionar Fecha</label>
-                            <input type="date" id="input-fecha" class="w-full bg-transparent text-sm outline-none cursor-pointer">
-                        </div>
-                        <button onclick="bloquearFecha()" class="w-full bg-black text-white py-5 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-gray-800 transition-all">
-                            Confirmar Bloqueo
-                        </button>
-                    </div>
-                </section>
-
-                <section>
-                    <h3 class="text-[11px] font-900 uppercase tracking-[0.3em] mb-6 flex items-center">
-                        <span class="w-2 h-2 bg-gray-300 mr-2"></span> Días Bloqueados
-                    </h3>
-                    <div id="lista-bloqueados" class="space-y-2">
-                        <div class="group flex justify-between items-center border border-gray-100 p-4 hover:border-black transition-all">
-                            <span class="text-[11px] font-bold uppercase tracking-widest">25/12/2025</span>
-                            <button class="text-[9px] font-bold text-red-500 uppercase opacity-0 group-hover:opacity-100 transition-all">Eliminar</button>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <div class="lg:col-span-8">
-                <h3 class="text-[11px] font-900 uppercase tracking-[0.3em] mb-6 flex items-center">
-                    <span class="w-2 h-2 bg-black mr-2"></span> Próximos Clientes
-                </h3>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b-2 border-black">
-                                <th class="py-4 text-[10px] uppercase tracking-widest font-800">Hora</th>
-                                <th class="py-4 text-[10px] uppercase tracking-widest font-800">Cliente</th>
-                                <th class="py-4 text-[10px] uppercase tracking-widest font-800">Servicio</th>
-                                <th class="py-4 text-[10px] uppercase tracking-widest font-800 text-right">Contacto</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            <tr class="group hover:bg-gray-50 transition-all">
-                                <td class="py-6 text-sm font-800">10:30</td>
-                                <td class="py-6 text-xs uppercase tracking-wider">Carlos Ruiz <br> <span class="text-[9px] text-gray-400 font-normal">carlos@email.com</span></td>
-                                <td class="py-6 text-xs font-light italic">Corte + barba + peinado</td>
-                                <td class="py-6 text-right">
-                                    <a href="https://wa.me/34600000000?text=Hola%20Carlos,%20soy%20Óscar%20de%20502%20Barber%20Studio.%20Te%20confirmo%20tu%20cita." 
-                                       target="_blank" 
-                                       class="inline-block border border-black px-4 py-2 text-[9px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all">
-                                        WhatsApp
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-12 grid grid-cols-2 gap-4">
-                    <div class="border border-black p-6">
-                        <p class="text-[9px] uppercase font-bold text-gray-400 mb-1">Citas Hoy</p>
-                        <p class="text-2xl font-800">08</p>
-                    </div>
-                    <div class="border border-black p-6">
-                        <p class="text-[9px] uppercase font-bold text-gray-400 mb-1">Caja Estimada</p>
-                        <p class="text-2xl font-800">114,00€</p>
-                    </div>
-                </div>
-            </div>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-[9px] uppercase tracking-[0.2em] text-gray-500 border-b border-gray-100">
+                        <th class="p-4 font-bold">Fecha / Hora</th>
+                        <th class="p-4 font-bold">Cliente / Teléfono</th>
+                        <th class="p-4 font-bold">Servicio</th>
+                        <th class="p-4 font-bold text-right">Gestión</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-agenda" class="divide-y divide-gray-100">
+                    </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        function bloquearFecha() {
-            const fechaInput = document.getElementById('input-fecha');
-            const lista = document.getElementById('lista-bloqueados');
-            
-            if (!fechaInput.value) return alert("Selecciona una fecha");
+        const urlScript = 'https://script.google.com/macros/s/AKfycbwVTZdjE6-uBmyqsGsNlLYgkvPohohhr_Us_KixYjVYo9DwJptyHbpSAm6APqYawO3P/exec'; // <--- PEGA TU URL AQUÍ
+        let todasLasCitas = [];
+        let filtroActual = 'today';
 
-            // Crear el elemento visualmente
-            const div = document.createElement('div');
-            div.className = "group flex justify-between items-center border border-black p-4 bg-white";
-            div.innerHTML = `
-                <span class="text-[11px] font-bold uppercase tracking-widest">${fechaInput.value}</span>
-                <button onclick="this.parentElement.remove()" class="text-[9px] font-bold text-red-500 uppercase">Eliminar</button>
-            `;
-            
-            lista.prepend(div);
-            fechaInput.value = "";
+        // Precios para el cálculo de caja
+        const precios = {
+            "Corte y lavado": 13,
+            "Corte + barba": 17,
+            "Arreglo barba": 7
+        };
+
+        async function cargarAgenda() {
+            try {
+                const res = await fetch(`${urlScript}?action=getAppointments`);
+                todasLasCitas = await res.json();
+                document.getElementById('loading-agenda').style.display = 'none';
+                renderizarAgenda();
+            } catch (e) {
+                document.getElementById('loading-agenda').innerText = "Error de conexión con Google Sheets";
+            }
         }
+
+        function setFilter(filter) {
+            filtroActual = filter;
+            document.getElementById('filter-today').classList.toggle('tab-active', filter === 'today');
+            document.getElementById('filter-all').classList.toggle('tab-active', filter === 'all');
+            renderizarAgenda();
+        }
+
+        function renderizarAgenda() {
+            const hoy = new Date().toISOString().split('T')[0];
+            const cuerpo = document.getElementById('cuerpo-agenda');
+            
+            // Filtrar citas
+            const citasFiltradas = todasLasCitas.filter(cita => {
+                return filtroActual === 'all' ? true : cita[5] === hoy;
+            });
+
+            // Calcular Métricas de HOY (independientemente del filtro visual)
+            const citasHoy = todasLasCitas.filter(cita => cita[5] === hoy);
+            let ingresosHoy = 0;
+            citasHoy.forEach(cita => {
+                // Buscamos el precio según el nombre del servicio
+                const serv = cita[4];
+                if (precios[serv]) ingresosHoy += precios[serv];
+            });
+
+            document.getElementById('total-citas-hoy').innerText = citasHoy.length;
+            document.getElementById('caja-hoy').innerText = ingresosHoy.toFixed(2) + "€";
+            
+            // Próxima hora hoy
+            const proximas = citasHoy.filter(c => c[6] > new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})).sort((a,b) => a[6] > b[6] ? 1 : -1);
+            document.getElementById('proxima-hora').innerText = proximas.length > 0 ? proximas[0][6] : "--:--";
+
+            // Dibujar Tabla
+            cuerpo.innerHTML = citasFiltradas.reverse().map(cita => `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="p-4">
+                        <span class="text-[10px] font-bold block">${cita[5]}</span>
+                        <span class="text-sm font-800">${cita[6]}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-xs font-bold uppercase block">${cita[1]}</span>
+                        <span class="text-[10px] text-gray-400">${cita[2]}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-[10px] px-2 py-1 bg-gray-100 uppercase font-bold">${cita[4]}</span>
+                    </td>
+                    <td class="p-4 text-right space-x-2">
+                        <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="inline-block border border-black p-2 hover:bg-black hover:text-white transition-all">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.48s3.481 5.229 3.481 8.405c0 6.555-5.332 11.89-11.888 11.89-2.013 0-3.991-.51-5.753-1.479l-6.231 1.69zm6.262-3.693c1.543.918 3.541 1.458 5.617 1.458 5.48 0 9.939-4.458 9.939-9.938 0-5.48-4.459-9.939-9.939-9.939-5.48 0-9.938 4.459-9.938 9.939 0 2.214.73 4.303 2.08 6.035l-1.096 4.001 4.135-1.127z"/></svg>
+                        </a>
+                        <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white transition-all">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function cancelarCita(id) {
+            if(!confirm("¿Deseas anular esta cita? Esto la borrará del Calendario y liberará el hueco.")) return;
+            await fetch(urlScript, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'cancel', eventId: id })
+            });
+            cargarAgenda();
+        }
+
+        // Carga inicial
+        cargarAgenda();
     </script>
 </body>
 </html>
