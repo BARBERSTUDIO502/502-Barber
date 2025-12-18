@@ -5,20 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <title>502 Admin - Dashboard</title>
+    <title>502 Barber Studio - Dashboard</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
-        .tab-active { background: black !color: white; color: white !important; }
+        /* Notas: Pestaña activa ahora con fondo negro y letras blancas claro */
+        .tab-active { background: #000 !important; color: #fff !important; font-weight: 800; }
         input, select, textarea { border-bottom: 1px solid black !important; outline: none; }
         .modal-overlay { background: rgba(0,0,0,0.8); z-index: 50; }
+        /* Animación suave para el Dashboard */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="p-2 md:p-10">
     
     <div id="modal-editor" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm p-8 shadow-2xl border border-black">
-            <h3 class="text-xl font-800 uppercase tracking-tighter mb-6">Modificar Cita</h3>
+            <h3 class="text-xl font-800 uppercase tracking-tighter mb-6 italic">Modificar Cita</h3>
             <div class="space-y-6">
                 <div>
                     <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Nueva Fecha</label>
@@ -41,7 +45,7 @@
     <div id="modal-ficha" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md p-8 shadow-2xl border border-black">
             <div class="flex justify-between items-start mb-6">
-                <h3 class="text-xl font-800 uppercase tracking-tighter">Ficha del Cliente</h3>
+                <h3 class="text-xl font-800 uppercase tracking-tighter italic">Ficha del Cliente</h3>
                 <span id="ficha-email" class="text-[9px] text-gray-400 font-bold uppercase"></span>
             </div>
             <div class="space-y-6">
@@ -58,15 +62,18 @@
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-8 border-b-2 border-black pb-8 px-2">
+    <div class="max-w-5xl mx-auto fade-in">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 border-b-2 border-black pb-8 px-2 gap-4">
             <div>
-                <h1 class="text-3xl font-800 tracking-tighter uppercase leading-none">502 Admin</h1>
-                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold mt-2 italic">Óscar Mejicanos</p>
+                <h1 class="text-4xl md:text-5xl font-800 tracking-tighter uppercase leading-none">502 BARBER STUDIO</h1>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2 italic">Óscar Mejicanos</p>
             </div>
-            <button onclick="cargarAgenda()" class="p-2 border border-black rounded-full hover:bg-gray-100 transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            </button>
+            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                <span class="bg-black text-white px-4 py-1 text-[10px] font-800 uppercase tracking-widest italic">Dashboard</span>
+                <button onclick="cargarAgenda()" class="p-2 border border-black rounded-full hover:bg-gray-100 transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+            </div>
         </header>
 
         <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 font-800">
@@ -74,61 +81,61 @@
                 <p id="total-citas" class="text-2xl md:text-4xl italic">0</p>
                 <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Citas Hoy</p>
             </div>
-            <div class="card-admin p-4 text-center bg-black text-white">
+            <div class="card-admin p-4 text-center bg-black text-white shadow-lg">
                 <p id="ingresos-hoy" class="text-2xl md:text-4xl italic">0€</p>
                 <p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja Hoy</p>
             </div>
-            <div class="card-admin p-4 text-center">
+            <div class="card-admin p-4 text-center border-dashed">
                 <p id="proxima-cita" class="text-2xl md:text-4xl italic underline">--</p>
                 <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Siguiente</p>
             </div>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-4 mb-6 px-2">
-            <div class="flex gap-2">
-                <button id="tab-hoy" onclick="cambiarFiltro('hoy')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest tab-active transition-all">Hoy</button>
-                <button id="tab-futuro" onclick="cambiarFiltro('futuro')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest transition-all">Próximos</button>
-                <button id="tab-pasado" onclick="cambiarFiltro('pasado')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest transition-all">Pasados</button>
+            <div class="flex gap-1">
+                <button id="tab-hoy" onclick="cambiarFiltro('hoy')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest tab-active transition-all">Hoy</button>
+                <button id="tab-futuro" onclick="cambiarFiltro('futuro')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all hover:bg-gray-50">Próximos</button>
+                <button id="tab-pasado" onclick="cambiarFiltro('pasado')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all hover:bg-gray-50">Pasados</button>
             </div>
             
-            <div id="rango-pasados" class="hidden flex gap-2 items-center text-[10px] font-bold uppercase">
-                <input type="date" id="fecha-desde" class="bg-transparent px-1">
-                <span>al</span>
-                <input type="date" id="fecha-hasta" class="bg-transparent px-1">
-                <button onclick="renderizarUI()" class="bg-black text-white px-3 py-1 ml-2">Filtrar</button>
+            <div id="rango-pasados" class="hidden flex gap-2 items-center text-[10px] font-bold uppercase bg-gray-100 p-2 rounded-sm">
+                <input type="date" id="fecha-desde" class="bg-transparent border-none">
+                <span class="text-gray-400">al</span>
+                <input type="date" id="fecha-hasta" class="bg-transparent border-none">
+                <button onclick="renderizarUI()" class="bg-black text-white px-4 py-1.5 ml-2 hover:opacity-80 transition-all">Filtrar</button>
             </div>
         </div>
 
         <div class="bg-white border-y md:border border-black overflow-hidden shadow-sm mb-16">
-            <div id="loading" class="p-20 text-center uppercase text-[10px] tracking-widest text-gray-400">Sincronizando con Google...</div>
+            <div id="loading" class="p-20 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Sincronizando con Google...</div>
             <table class="w-full text-left table-fixed md:table-auto" id="tabla-main" style="display:none">
                 <thead>
                     <tr class="bg-gray-50 text-[8px] uppercase tracking-widest border-b border-black font-bold text-gray-500">
                         <th class="p-4 w-16 md:w-24">Hora</th>
                         <th class="p-4">Cliente / Fecha</th>
                         <th class="p-4 hidden md:table-cell">Servicio</th>
-                        <th class="p-4 text-right w-28 md:w-48">Acción</th>
+                        <th class="p-4 text-right w-32 md:w-56">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
             </table>
         </div>
 
-        <div class="border-t-4 border-black pt-12 mb-20">
-            <h2 class="text-2xl font-800 uppercase tracking-tighter mb-8 px-2 italic underline">Reporte de Negocio</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-2">
-                <div class="card-admin p-6">
-                    <p id="label-mes-anterior" class="text-[9px] uppercase font-800 text-gray-400 mb-2">Caja (Mes anterior)</p>
-                    <p id="caja-mes-anterior" class="text-4xl font-800 italic">0€</p>
-                    <p id="conteo-mes-anterior" class="text-[9px] mt-2 font-bold text-gray-500">-- reservas totales</p>
+        <div class="border-t-4 border-black pt-12 mb-20 bg-white p-6 shadow-sm border">
+            <h2 class="text-2xl font-800 uppercase tracking-tighter mb-10 px-2 italic underline decoration-2 underline-offset-4">Reporte de Negocio</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="border-l-2 border-black pl-6">
+                    <p id="label-mes-anterior" class="text-[9px] uppercase font-800 text-gray-400 mb-2 tracking-widest">Caja (Mes anterior)</p>
+                    <p id="caja-mes-anterior" class="text-5xl font-800 italic tracking-tighter">0€</p>
+                    <p id="conteo-mes-anterior" class="text-[10px] mt-3 font-bold text-gray-600 uppercase tracking-tight">-- reservas totales</p>
                 </div>
-                <div class="card-admin p-6">
-                    <p class="text-[9px] uppercase font-800 text-gray-400 mb-4">Clientes más fieles</p>
+                <div class="border-l-2 border-black pl-6">
+                    <p class="text-[9px] uppercase font-800 text-gray-400 mb-4 tracking-widest">Clientes más fieles</p>
                     <div id="top-clientes" class="space-y-3"></div>
                 </div>
-                <div class="card-admin p-6">
-                    <p class="text-[9px] uppercase font-800 text-gray-400 mb-4">Servicios más pedidos</p>
-                    <div id="stats-servicios" class="space-y-2"></div>
+                <div class="border-l-2 border-black pl-6">
+                    <p class="text-[9px] uppercase font-800 text-gray-400 mb-4 tracking-widest">Servicios más pedidos</p>
+                    <div id="stats-servicios" class="space-y-3"></div>
                 </div>
             </div>
         </div>
@@ -149,7 +156,7 @@
         }
 
         window.onload = () => {
-            const pass = prompt("Contraseña de Acceso:");
+            const pass = prompt("Acceso Administrador 502:");
             if(pass === "502admin") {
                 const hoy = new Date().toISOString().split('T')[0];
                 document.getElementById('fecha-desde').value = hoy;
@@ -185,7 +192,7 @@
             const hoyStr = now.toISOString().split('T')[0];
             const cuerpo = document.getElementById('lista-citas');
             
-            // Métricas de cabecera (Sobre HOY y No Canceladas)
+            // Métricas de cabecera
             const citasHoyValidas = todasLasCitas.filter(c => c[5] === hoyStr && !c[1].startsWith("CANCELADA"));
             let cajaHoy = 0;
             citasHoyValidas.forEach(c => cajaHoy += (precios[c[4]] || 0));
@@ -196,20 +203,17 @@
             const prox = citasHoyValidas.filter(c => c[6] > horaActual).sort((a,b) => a[6] > b[6] ? 1 : -1);
             document.getElementById('proxima-cita').innerText = prox.length > 0 ? prox[0][6] : "--";
 
-            // Filtrado principal de la tabla (Siempre ocultamos canceladas)
+            // Filtrado principal de la tabla (Ocultar canceladas siempre)
             let filtered = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
 
-            if(filtroVista === 'hoy') {
-                filtered = filtered.filter(c => c[5] === hoyStr);
-            } else if(filtroVista === 'futuro') {
-                filtered = filtered.filter(c => c[5] > hoyStr);
-            } else if(filtroVista === 'pasado') {
-                const desde = document.getElementById('fecha-desde').value;
-                const hasta = document.getElementById('fecha-hasta').value;
-                filtered = filtered.filter(c => c[5] >= desde && c[5] <= hasta);
+            if(filtroVista === 'hoy') filtered = filtered.filter(c => c[5] === hoyStr);
+            else if(filtroVista === 'futuro') filtered = filtered.filter(c => c[5] > hoyStr);
+            else if(filtroVista === 'pasado') {
+                const d = document.getElementById('fecha-desde').value;
+                const h = document.getElementById('fecha-hasta').value;
+                filtered = filtered.filter(c => c[5] >= d && c[5] <= h);
             }
 
-            // Ordenar: Pasados descendente (más nuevo arriba), otros ascendente
             const multi = (filtroVista === 'pasado') ? -1 : 1;
             filtered.sort((a,b) => (a[5]+a[6] > b[5]+b[6]) ? multi : -multi);
 
@@ -218,16 +222,18 @@
                     <td class="p-4 font-800 text-xl md:text-2xl italic tracking-tighter">${cita[6]}</td>
                     <td class="p-4">
                         <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${cita[3]}', '${cita[1]}')">
-                            <span class="text-[11px] font-bold uppercase truncate group-hover:underline text-black">${cita[1]}</span>
-                            <span class="text-[11px] font-bold uppercase mt-1 text-black">${formatearFechaElegante(cita[5])}</span>
+                            <span class="text-[12px] font-800 uppercase group-hover:underline text-black">${cita[1]}</span>
+                            <span class="text-[12px] font-800 uppercase mt-0.5 text-black">${formatearFechaElegante(cita[5])}</span>
                         </div>
                     </td>
                     <td class="p-4 hidden md:table-cell"><span class="text-[9px] bg-gray-100 px-2 py-1 font-800 italic uppercase text-gray-500">${cita[4]}</span></td>
                     <td class="p-4 text-right">
                         <div class="flex justify-end gap-1.5">
-                            <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="border border-black p-2 hover:bg-black hover:text-white transition-all text-[9px] font-bold px-3">WA</a>
-                            <button onclick="abrirEditor('${cita[7]}', '${cita[5]}', '${cita[6]}')" class="border border-black p-2 hover:bg-black hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                            <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                            <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="border border-black p-2 hover:bg-black hover:text-white transition-all rounded-sm shadow-sm flex items-center">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.394 0 12.03a11.782 11.782 0 001.579 5.825L0 24l6.335-1.652a11.79 11.79 0 005.71 1.448h.005c6.637 0 12.032-5.395 12.034-12.03a11.75 11.75 0 00-3.489-8.502z"/></svg>
+                            </a>
+                            <button onclick="abrirEditor('${cita[7]}', '${cita[5]}', '${cita[6]}')" class="border border-black p-2 hover:bg-black hover:text-white transition-all shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                            <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white transition-all shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                         </div>
                     </td>
                 </tr>`).join('');
@@ -238,46 +244,47 @@
             const mesActual = now.getMonth();
             const añoActual = now.getFullYear();
             
-            // 1. Mes Anterior
-            let mesBusqueda = mesActual - 1;
-            let añoBusqueda = añoActual;
-            if(mesBusqueda < 0) { mesBusqueda = 11; añoBusqueda--; }
+            let mesB = mesActual - 1; let añoB = añoActual;
+            if(mesB < 0) { mesB = 11; añoB--; }
             
-            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            document.getElementById('label-mes-anterior').innerText = `Caja (${nombresMeses[mesBusqueda]})`;
+            const nombresM = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById('label-mes-anterior').innerText = `Caja (${nombresM[mesB]})`;
 
-            const citasVálidasTotal = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
+            const validas = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
 
-            const mesPasado = citasVálidasTotal.filter(c => {
+            const mesP = validas.filter(c => {
                 const f = new Date(c[5]);
-                return f.getMonth() === mesBusqueda && f.getFullYear() === añoBusqueda;
+                return f.getMonth() === mesB && f.getFullYear() === añoB;
             });
 
-            let cajaTotal = 0;
-            mesPasado.forEach(c => cajaTotal += (precios[c[4]] || 0));
-            document.getElementById('caja-mes-anterior').innerText = cajaTotal + "€";
-            document.getElementById('conteo-mes-anterior').innerText = `${mesPasado.length} servicios realizados`;
+            let total = 0; mesP.forEach(c => total += (precios[c[4]] || 0));
+            document.getElementById('caja-mes-anterior').innerText = total + "€";
+            document.getElementById('conteo-mes-anterior').innerText = `${mesP.length} SERVICIOS REALIZADOS`;
 
-            // 2. Ranking Fidelidad (Top 3)
-            const ranking = {};
-            citasVálidasTotal.forEach(c => ranking[c[1]] = (ranking[c[1]] || 0) + 1);
-            const top3 = Object.entries(ranking).sort((a,b) => b[1] - a[1]).slice(0, 3);
-            document.getElementById('top-clientes').innerHTML = top3.map(([nom, num]) => `
-                <div class="flex justify-between items-center border-b border-gray-50 pb-1">
-                    <span class="text-[11px] font-bold uppercase truncate w-32">${nom}</span>
-                    <span class="text-[10px] bg-black text-white px-2 rounded-full">${num} citas</span>
+            // Ranking Fidelidad mejorado (Clickable y sin corte)
+            const countClie = {};
+            validas.forEach(c => {
+                const key = c[1];
+                if(!countClie[key]) countClie[key] = { count: 0, email: c[3] };
+                countClie[key].count++;
+            });
+            const top3 = Object.entries(countClie).sort((a,b) => b[1].count - a[1].count).slice(0, 3);
+            
+            document.getElementById('top-clientes').innerHTML = top3.map(([nom, d]) => `
+                <div class="flex justify-between items-center group cursor-pointer" onclick="abrirFichaCliente('${d.email}', '${nom}')">
+                    <span class="text-[11px] font-bold uppercase group-hover:underline">${nom}</span>
+                    <span class="text-[10px] bg-black text-white px-2 rounded-full font-800">${d.count}</span>
                 </div>`).join('');
 
-            // 3. Popularidad Servicios
-            const popularidad = {};
-            citasVálidasTotal.forEach(c => popularidad[c[4]] = (popularidad[c[4]] || 0) + 1);
-            document.getElementById('stats-servicios').innerHTML = Object.entries(popularidad).sort((a,b) => b[1] - a[1]).map(([serv, num]) => `
-                <div class="flex justify-between text-[11px] font-bold uppercase"><span>${serv}</span><span class="text-gray-400">${num}</span></div>`).join('');
+            const statsS = {};
+            validas.forEach(c => statsS[c[4]] = (statsS[c[4]] || 0) + 1);
+            document.getElementById('stats-servicios').innerHTML = Object.entries(statsS).sort((a,b) => b[1] - a[1]).map(([serv, n]) => `
+                <div class="flex justify-between text-[11px] font-bold uppercase"><span>${serv}</span><span class="text-gray-400 italic">${n}</span></div>`).join('');
         }
 
         // LÓGICA DE MODALES
         async function abrirFichaCliente(email, nombre) {
-            if(!email || email === "N/A") return alert("Sin email vinculado");
+            if(!email || email === "N/A") return alert("El perfil de " + nombre + " no tiene email vinculado.");
             document.getElementById('loading').style.display = 'block';
             const res = await fetch(`${urlScript}?action=getClientInfo&email=${email}`);
             const info = await res.json();
@@ -292,15 +299,14 @@
             const email = document.getElementById('ficha-email').innerText;
             const notas = document.getElementById('ficha-notas').value;
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClientNotes', email, notas }) });
-            alert("Notas técnicas actualizadas");
+            alert("Notas actualizadas para Óscar.");
             cerrarFicha();
         }
 
         function cerrarFicha() { document.getElementById('modal-ficha').classList.add('hidden'); }
 
         async function abrirEditor(id, fecha, hora) {
-            citaEditandoId = id; 
-            document.getElementById('edit-fecha').value = fecha;
+            citaEditandoId = id; document.getElementById('edit-fecha').value = fecha;
             document.getElementById('modal-editor').classList.remove('hidden');
             await cargarHorasEditor(fecha, hora);
             document.getElementById('edit-fecha').onchange = (e) => cargarHorasEditor(e.target.value, "");
@@ -326,7 +332,7 @@
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Deseas anular esta cita permanentemente?")) return;
+            if(!confirm("¿Anular cita permanentemente?")) return;
             document.getElementById('loading').style.display = 'block';
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
             cargarAgenda();
