@@ -9,7 +9,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
-        .tab-active { background: black; color: white; }
+        .tab-active { background: black !color: white; color: white !important; }
         input, select, textarea { border-bottom: 1px solid black !important; outline: none; }
         .modal-overlay { background: rgba(0,0,0,0.8); z-index: 50; }
     </style>
@@ -154,8 +154,6 @@
                 const hoy = new Date().toISOString().split('T')[0];
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
-                document.getElementById('fecha-desde').max = hoy;
-                document.getElementById('fecha-hasta').max = hoy;
                 cargarAgenda();
             } else document.body.innerHTML = "Denegado";
         };
@@ -187,49 +185,49 @@
             const hoyStr = now.toISOString().split('T')[0];
             const cuerpo = document.getElementById('lista-citas');
             
-            // Métricas Hoy (Independientes del filtro de tabla)
-            const citasHoy = todasLasCitas.filter(c => c[5] === hoyStr && !c[1].startsWith("CANCELADA"));
+            // Métricas de cabecera (Sobre HOY y No Canceladas)
+            const citasHoyValidas = todasLasCitas.filter(c => c[5] === hoyStr && !c[1].startsWith("CANCELADA"));
             let cajaHoy = 0;
-            citasHoy.forEach(c => cajaHoy += (precios[c[4]] || 0));
-            document.getElementById('total-citas').innerText = citasHoy.length;
+            citasHoyValidas.forEach(c => cajaHoy += (precios[c[4]] || 0));
+            document.getElementById('total-citas').innerText = citasHoyValidas.length;
             document.getElementById('ingresos-hoy').innerText = cajaHoy + "€";
+            
             const horaActual = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-            const prox = citasHoy.filter(c => c[6] > horaActual).sort((a,b) => a[6] > b[6] ? 1 : -1);
+            const prox = citasHoyValidas.filter(c => c[6] > horaActual).sort((a,b) => a[6] > b[6] ? 1 : -1);
             document.getElementById('proxima-cita').innerText = prox.length > 0 ? prox[0][6] : "--";
 
-            // Lógica de filtrado de tabla
-            let filtered = [];
-            if(filtroVista === 'hoy') filtered = citasHoy;
-            else if(filtroVista === 'futuro') filtered = todasLasCitas.filter(c => c[5] > hoyStr && !c[1].startsWith("CANCELADA"));
-            else if(filtroVista === 'pasado') {
+            // Filtrado principal de la tabla (Siempre ocultamos canceladas)
+            let filtered = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
+
+            if(filtroVista === 'hoy') {
+                filtered = filtered.filter(c => c[5] === hoyStr);
+            } else if(filtroVista === 'futuro') {
+                filtered = filtered.filter(c => c[5] > hoyStr);
+            } else if(filtroVista === 'pasado') {
                 const desde = document.getElementById('fecha-desde').value;
                 const hasta = document.getElementById('fecha-hasta').value;
-                filtered = todasLasCitas.filter(c => c[5] >= desde && c[5] <= hasta);
+                filtered = filtered.filter(c => c[5] >= desde && c[5] <= hasta);
             }
 
-            // Orden: Hoy y Próximos ascendente. Pasados descendente (más reciente arriba)
-            const orden = (filtroVista === 'pasado') ? -1 : 1;
-            cuerpo.innerHTML = filtered.sort((a,b) => (a[5]+a[6] > b[5]+b[6]) ? orden : -orden).map(cita => `
-                <tr class="hover:bg-gray-50 transition-all border-b border-gray-50">
+            // Ordenar: Pasados descendente (más nuevo arriba), otros ascendente
+            const multi = (filtroVista === 'pasado') ? -1 : 1;
+            filtered.sort((a,b) => (a[5]+a[6] > b[5]+b[6]) ? multi : -multi);
+
+            cuerpo.innerHTML = filtered.map(cita => `
+                <tr class="hover:bg-gray-50 transition-all">
                     <td class="p-4 font-800 text-xl md:text-2xl italic tracking-tighter">${cita[6]}</td>
                     <td class="p-4">
                         <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${cita[3]}', '${cita[1]}')">
-                            <span class="text-[11px] font-bold uppercase truncate group-hover:underline ${cita[1].startsWith("CANCELADA") ? 'text-red-300 line-through' : 'text-black'}">${cita[1]}</span>
+                            <span class="text-[11px] font-bold uppercase truncate group-hover:underline text-black">${cita[1]}</span>
                             <span class="text-[11px] font-bold uppercase mt-1 text-black">${formatearFechaElegante(cita[5])}</span>
                         </div>
                     </td>
-                    <td class="p-4 hidden md:table-cell">
-                        <span class="text-[9px] bg-gray-100 px-2 py-1 font-800 italic uppercase text-gray-500">${cita[4]}</span>
-                    </td>
+                    <td class="p-4 hidden md:table-cell"><span class="text-[9px] bg-gray-100 px-2 py-1 font-800 italic uppercase text-gray-500">${cita[4]}</span></td>
                     <td class="p-4 text-right">
-                        <div class="flex justify-end gap-1">
-                            <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="border border-black p-2 hover:bg-black hover:text-white transition-all text-[9px] font-bold uppercase px-3">WA</a>
-                            <button onclick="abrirEditor('${cita[7]}', '${cita[5]}', '${cita[6]}')" class="border border-black p-2 hover:bg-black hover:text-white transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </button>
-                            <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                        <div class="flex justify-end gap-1.5">
+                            <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="border border-black p-2 hover:bg-black hover:text-white transition-all text-[9px] font-bold px-3">WA</a>
+                            <button onclick="abrirEditor('${cita[7]}', '${cita[5]}', '${cita[6]}')" class="border border-black p-2 hover:bg-black hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                            <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                         </div>
                     </td>
                 </tr>`).join('');
@@ -240,7 +238,7 @@
             const mesActual = now.getMonth();
             const añoActual = now.getFullYear();
             
-            // 1. Caja Mes Anterior
+            // 1. Mes Anterior
             let mesBusqueda = mesActual - 1;
             let añoBusqueda = añoActual;
             if(mesBusqueda < 0) { mesBusqueda = 11; añoBusqueda--; }
@@ -248,70 +246,61 @@
             const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             document.getElementById('label-mes-anterior').innerText = `Caja (${nombresMeses[mesBusqueda]})`;
 
-            const citasMesPasado = todasLasCitas.filter(c => {
+            const citasVálidasTotal = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
+
+            const mesPasado = citasVálidasTotal.filter(c => {
                 const f = new Date(c[5]);
-                return f.getMonth() === mesBusqueda && f.getFullYear() === añoBusqueda && !c[1].startsWith("CANCELADA");
+                return f.getMonth() === mesBusqueda && f.getFullYear() === añoBusqueda;
             });
 
             let cajaTotal = 0;
-            citasMesPasado.forEach(c => cajaTotal += (precios[c[4]] || 0));
+            mesPasado.forEach(c => cajaTotal += (precios[c[4]] || 0));
             document.getElementById('caja-mes-anterior').innerText = cajaTotal + "€";
-            document.getElementById('conteo-mes-anterior').innerText = `${citasMesPasado.length} servicios realizados`;
+            document.getElementById('conteo-mes-anterior').innerText = `${mesPasado.length} servicios realizados`;
 
-            // 2. Clientes más fieles (Top 3)
-            const countClientes = {};
-            todasLasCitas.filter(c => !c[1].startsWith("CANCELADA")).forEach(c => {
-                const id = c[1];
-                countClientes[id] = (countClientes[id] || 0) + 1;
-            });
-            const topC = Object.entries(countClientes).sort((a,b) => b[1] - a[1]).slice(0, 3);
-            document.getElementById('top-clientes').innerHTML = topC.map(([nom, num]) => `
+            // 2. Ranking Fidelidad (Top 3)
+            const ranking = {};
+            citasVálidasTotal.forEach(c => ranking[c[1]] = (ranking[c[1]] || 0) + 1);
+            const top3 = Object.entries(ranking).sort((a,b) => b[1] - a[1]).slice(0, 3);
+            document.getElementById('top-clientes').innerHTML = top3.map(([nom, num]) => `
                 <div class="flex justify-between items-center border-b border-gray-50 pb-1">
                     <span class="text-[11px] font-bold uppercase truncate w-32">${nom}</span>
                     <span class="text-[10px] bg-black text-white px-2 rounded-full">${num} citas</span>
                 </div>`).join('');
 
-            // 3. Servicios más pedidos
-            const countServ = {};
-            todasLasCitas.filter(c => !c[1].startsWith("CANCELADA")).forEach(c => {
-                countServ[c[4]] = (countServ[c[4]] || 0) + 1;
-            });
-            document.getElementById('stats-servicios').innerHTML = Object.entries(countServ).sort((a,b) => b[1] - a[1]).map(([serv, num]) => `
-                <div class="flex justify-between text-[11px] font-bold uppercase">
-                    <span>${serv}</span>
-                    <span class="text-gray-400">${num}</span>
-                </div>`).join('');
+            // 3. Popularidad Servicios
+            const popularidad = {};
+            citasVálidasTotal.forEach(c => popularidad[c[4]] = (popularidad[c[4]] || 0) + 1);
+            document.getElementById('stats-servicios').innerHTML = Object.entries(popularidad).sort((a,b) => b[1] - a[1]).map(([serv, num]) => `
+                <div class="flex justify-between text-[11px] font-bold uppercase"><span>${serv}</span><span class="text-gray-400">${num}</span></div>`).join('');
         }
 
         // LÓGICA DE MODALES
         async function abrirFichaCliente(email, nombre) {
             if(!email || email === "N/A") return alert("Sin email vinculado");
             document.getElementById('loading').style.display = 'block';
-            try {
-                const res = await fetch(`${urlScript}?action=getClientInfo&email=${email}`);
-                const info = await res.json();
-                document.getElementById('ficha-nombre').innerText = nombre;
-                document.getElementById('ficha-email').innerText = email;
-                document.getElementById('ficha-notas').value = info.notas || "";
-                document.getElementById('modal-ficha').classList.remove('hidden');
-            } catch (e) { alert("Error"); }
+            const res = await fetch(`${urlScript}?action=getClientInfo&email=${email}`);
+            const info = await res.json();
+            document.getElementById('ficha-nombre').innerText = nombre;
+            document.getElementById('ficha-email').innerText = email;
+            document.getElementById('ficha-notas').value = info.notas || "";
+            document.getElementById('modal-ficha').classList.remove('hidden');
             document.getElementById('loading').style.display = 'none';
         }
 
         async function guardarNotas() {
             const email = document.getElementById('ficha-email').innerText;
             const notas = document.getElementById('ficha-notas').value;
-            document.getElementById('loading').style.display = 'block';
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClientNotes', email, notas }) });
-            alert("Guardado");
+            alert("Notas técnicas actualizadas");
             cerrarFicha();
-            document.getElementById('loading').style.display = 'none';
         }
 
         function cerrarFicha() { document.getElementById('modal-ficha').classList.add('hidden'); }
 
         async function abrirEditor(id, fecha, hora) {
-            citaEditandoId = id; document.getElementById('edit-fecha').value = fecha;
+            citaEditandoId = id; 
+            document.getElementById('edit-fecha').value = fecha;
             document.getElementById('modal-editor').classList.remove('hidden');
             await cargarHorasEditor(fecha, hora);
             document.getElementById('edit-fecha').onchange = (e) => cargarHorasEditor(e.target.value, "");
@@ -319,7 +308,6 @@
 
         async function cargarHorasEditor(f, h) {
             const select = document.getElementById('edit-hora');
-            select.innerHTML = '<option value="">Cargando...</option>';
             const res = await fetch(`${urlScript}?fecha=${f}`);
             const ocupadas = await res.json();
             const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
@@ -338,7 +326,7 @@
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Borrar permanentemente?")) return;
+            if(!confirm("¿Deseas anular esta cita permanentemente?")) return;
             document.getElementById('loading').style.display = 'block';
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
             cargarAgenda();
