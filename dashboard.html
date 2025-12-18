@@ -6,12 +6,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <title>502 Admin - Dashboard</title>
+
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
         .tab-active { background: black; color: white; }
         input, select, textarea { border-bottom: 1px solid black !important; outline: none; }
-        /* Notas: Estilo para las ventanas flotantes */
         .modal-overlay { background: rgba(0,0,0,0.8); z-index: 50; }
     </style>
 </head>
@@ -49,7 +49,7 @@
                 <div>
                     <p id="ficha-nombre" class="text-lg font-bold uppercase mb-4 border-b border-gray-100 pb-2"></p>
                     <label class="text-[10px] uppercase font-bold text-gray-400 block mb-2">Notas Técnicas (Corte, productos, etc.)</label>
-                    <textarea id="ficha-notas" rows="5" class="w-full p-3 bg-gray-50 border-none text-sm" placeholder="Ej: Degradado al 0.5, tijera arriba, usa pomada mate..."></textarea>
+                    <textarea id="ficha-notas" rows="5" class="w-full p-3 bg-gray-50 border-none text-sm" placeholder="Ej: Degradado al 0.5, tijera arriba..."></textarea>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="cerrarFicha()" class="flex-1 py-3 text-[10px] uppercase font-bold border border-black">Cerrar</button>
@@ -96,7 +96,7 @@
                 <thead>
                     <tr class="bg-gray-50 text-[8px] uppercase tracking-widest border-b border-black font-bold text-gray-500">
                         <th class="p-4 w-16 md:w-24">Hora</th>
-                        <th class="p-4">Cliente</th>
+                        <th class="p-4">Cliente / Fecha</th>
                         <th class="p-4 hidden md:table-cell">Servicio</th>
                         <th class="p-4 text-right w-28 md:w-48">Acción</th>
                     </tr>
@@ -113,7 +113,7 @@
         let citaEditandoId = null;
         const precios = { "Corte y lavado": 13, "Corte + barba": 17, "Arreglo barba": 7 };
 
-        // Función para formatear fecha elegantemente
+        // Notas: Formatea la fecha de YYYY-MM-DD a "D de Mes de YYYY"
         function formatearFechaElegante(fechaStr) {
             const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
             const partes = fechaStr.split("-");
@@ -148,10 +148,10 @@
 
         function renderizarUI() {
             const now = new Date();
-            const hoy = now.toISOString().split('T')[0];
+            const hoyStr = now.toISOString().split('T')[0];
             const cuerpo = document.getElementById('lista-citas');
             
-            const citasHoy = todasLasCitas.filter(c => c[5] === hoy);
+            const citasHoy = todasLasCitas.filter(c => c[5] === hoyStr);
             let caja = 0;
             citasHoy.forEach(c => { if(precios[c[4]]) caja += precios[c[4]]; });
             
@@ -168,8 +168,8 @@
                     <td class="p-4 font-800 text-xl md:text-2xl italic tracking-tighter">${cita[6]}</td>
                     <td class="p-4">
                         <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${cita[3]}', '${cita[1]}')">
-                            <span class="text-[11px] font-bold uppercase truncate group-hover:underline">${cita[1]}</span>
-                            <span class="text-[8px] text-gray-300 mt-1">${formatearFechaElegante(cita[5])}</span>
+                            <span class="text-[11px] font-bold uppercase truncate group-hover:underline text-black">${cita[1]}</span>
+                            <span class="text-[11px] font-bold uppercase mt-1 text-black">${formatearFechaElegante(cita[5])}</span>
                         </div>
                     </td>
                     <td class="p-4 hidden md:table-cell">
@@ -189,42 +189,36 @@
                 </tr>`).join('');
         }
 
-        // --- LÓGICA DE FICHA DE CLIENTE ---
+        // Lógica de Ficha de Cliente
         async function abrirFichaCliente(email, nombre) {
-            if(!email || email === "N/A") return alert("Este cliente no proporcionó email para vincular ficha.");
-            
+            if(!email || email === "N/A") return alert("Sin email.");
             document.getElementById('loading').style.display = 'block';
             try {
                 const res = await fetch(`${urlScript}?action=getClientInfo&email=${email}`);
                 const info = await res.json();
-                
                 document.getElementById('ficha-nombre').innerText = nombre;
                 document.getElementById('ficha-email').innerText = email;
                 document.getElementById('ficha-notas').value = info.notas || "";
                 document.getElementById('modal-ficha').classList.remove('hidden');
-            } catch (e) { alert("Error al cargar la ficha"); }
+            } catch (e) { alert("Error al cargar"); }
             document.getElementById('loading').style.display = 'none';
         }
 
         async function guardarNotas() {
             const email = document.getElementById('ficha-email').innerText;
             const notas = document.getElementById('ficha-notas').value;
-            
             document.getElementById('loading').style.display = 'block';
             try {
-                await fetch(urlScript, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'saveClientNotes', email: email, notas: notas })
-                });
-                alert("Notas técnicas guardadas.");
+                await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClientNotes', email, notas }) });
+                alert("Guardado.");
                 cerrarFicha();
-            } catch (e) { alert("Error al guardar"); }
+            } catch (e) { alert("Error"); }
             document.getElementById('loading').style.display = 'none';
         }
 
         function cerrarFicha() { document.getElementById('modal-ficha').classList.add('hidden'); }
 
-        // --- LÓGICA DEL EDITOR DE FECHA ---
+        // Lógica del Editor de Fecha
         async function abrirEditor(id, fecha, hora) {
             citaEditandoId = id;
             document.getElementById('edit-fecha').value = fecha;
@@ -252,20 +246,17 @@
         async function guardarCambios() {
             const nuevaFecha = document.getElementById('edit-fecha').value;
             const nuevaHora = document.getElementById('edit-hora').value;
-            if(!nuevaFecha || !nuevaHora) return alert("Selecciona fecha y hora");
+            if(!nuevaFecha || !nuevaHora) return alert("Selecciona datos.");
             document.getElementById('loading').style.display = 'block';
             cerrarEditor();
             try {
-                await fetch(urlScript, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'update', eventId: citaEditandoId, nuevaFecha, nuevaHora })
-                });
+                await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'update', eventId: citaEditandoId, nuevaFecha, nuevaHora }) });
                 cargarAgenda();
-            } catch (e) { alert("Error al guardar cambios"); }
+            } catch (e) { alert("Error"); }
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Deseas anular esta cita permanentemente?")) return;
+            if(!confirm("¿Borrar cita?")) return;
             document.getElementById('loading').style.display = 'block';
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
             cargarAgenda();
