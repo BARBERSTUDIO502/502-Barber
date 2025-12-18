@@ -8,91 +8,80 @@
     <title>502 Admin - Dashboard</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
-        .card-admin { background: white; border: 1px solid #000; transition: all 0.3s ease; }
-        .btn-tab { border: 1px solid #000; font-[10px]; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.2s; }
+        .card-admin { background: white; border: 1px solid #000; }
         .tab-active { background: black; color: white; }
     </style>
 </head>
 <body class="p-4 md:p-10">
     <div class="max-w-5xl mx-auto">
-        
         <header class="flex justify-between items-center mb-10 border-b-2 border-black pb-8">
             <div>
-                <h1 class="text-4xl font-800 tracking-tighter uppercase">502 Admin</h1>
-                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold italic">Control de Agenda - Óscar Mejicanos</p>
+                <h1 class="text-4xl font-800 tracking-tighter uppercase leading-none">502 Admin</h1>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold italic mt-2">Gestión Óscar Mejicanos</p>
             </div>
-            <button onclick="cargarAgenda()" class="hover:rotate-180 transition-transform duration-500 p-2 border border-black rounded-full">
+            <button onclick="cargarAgenda()" class="p-2 border border-black rounded-full hover:bg-gray-100 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 font-800">
             <div class="card-admin p-6 text-center">
-                <p class="text-[9px] uppercase font-bold tracking-widest text-gray-400 mb-2">Citas Hoy</p>
-                <p id="total-citas" class="text-4xl font-800">0</p>
+                <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-2">Citas Hoy</p>
+                <p id="total-citas" class="text-4xl italic">0</p>
             </div>
-            <div class="card-admin p-6 text-center bg-black text-white shadow-xl scale-105">
-                <p class="text-[9px] uppercase font-bold tracking-widest text-gray-500 mb-2">Caja Estimada Hoy</p>
-                <p id="ingresos-hoy" class="text-4xl font-800">0€</p>
+            <div class="card-admin p-6 text-center bg-black text-white">
+                <p class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Caja Estimada</p>
+                <p id="ingresos-hoy" class="text-4xl italic">0€</p>
             </div>
             <div class="card-admin p-6 text-center">
-                <p class="text-[9px] uppercase font-bold tracking-widest text-gray-400 mb-2">Próximo Cliente</p>
-                <p id="proxima-cita" class="text-2xl font-800 italic">--:--</p>
+                <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-2">Próxima</p>
+                <p id="proxima-cita" class="text-4xl italic">--:--</p>
             </div>
         </div>
 
         <div class="flex gap-4 mb-8">
-            <button id="btn-hoy" onclick="cambiarFiltro('today')" class="btn-tab px-8 py-3 tab-active">Solo Hoy</button>
-            <button id="btn-todos" onclick="cambiarFiltro('all')" class="btn-tab px-8 py-3">Historial Completo</button>
+            <button id="btn-hoy" onclick="cambiarFiltro('today')" class="border border-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest tab-active">Hoy</button>
+            <button id="btn-todos" onclick="cambiarFiltro('all')" class="border border-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest">Todo</button>
         </div>
 
-        <div class="bg-white border border-gray-100 shadow-sm overflow-hidden">
-            <div id="loading" class="p-20 text-center uppercase text-[10px] tracking-[0.5em] text-gray-300 font-bold">Sincronizando con base de datos...</div>
-            
-            <table class="w-full text-left border-collapse">
+        <div class="bg-white border border-black">
+            <div id="loading" class="p-20 text-center uppercase text-[10px] tracking-widest text-gray-400">Sincronizando...</div>
+            <table class="w-full text-left" id="tabla-main" style="display:none">
                 <thead>
-                    <tr class="bg-gray-50 text-[9px] uppercase tracking-widest text-gray-500 border-b border-gray-100 font-bold">
-                        <th class="p-5">Horario</th>
-                        <th class="p-5">Cliente / Contacto</th>
+                    <tr class="bg-gray-50 text-[9px] uppercase tracking-widest border-b border-black font-bold">
+                        <th class="p-5">Hora</th>
+                        <th class="p-5">Cliente</th>
                         <th class="p-5">Servicio</th>
-                        <th class="p-5 text-right">Acciones</th>
+                        <th class="p-5 text-right">Acción</th>
                     </tr>
                 </thead>
-                <tbody id="lista-citas" class="divide-y divide-gray-100">
-                    </tbody>
+                <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec';
+        const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
         let todasLasCitas = [];
         let filtroActual = 'today';
+        const precios = { "Corte y lavado": 13, "Corte + barba + peinado": 17, "Arreglo de barba": 7 };
 
-        // Configuración de precios para el cálculo automático
-        const precios = {
-            "Corte y lavado": 13,
-            "Corte + barba + peinado": 17,
-            "Arreglo de barba": 7
-        };
-
-        // Seguridad básica al entrar
         window.onload = () => {
-            const pass = prompt("Contraseña de acceso 502:");
-            if(pass === "502admin") { cargarAgenda(); } 
-            else { document.body.innerHTML = "<p class='p-20 text-center uppercase tracking-widest'>Acceso No Autorizado</p>"; }
+            const pass = prompt("Contraseña:");
+            if(pass === "502admin") cargarAgenda();
+            else document.body.innerHTML = "No autorizado";
         };
 
         async function cargarAgenda() {
             document.getElementById('loading').style.display = 'block';
+            document.getElementById('tabla-main').style.display = 'none';
             try {
-                const response = await fetch(`${urlScript}?action=getAppointments`);
-                todasLasCitas = await response.json();
+                const res = await fetch(`${urlScript}?action=getAppointments`);
+                todasLasCitas = await res.json();
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('tabla-main').style.display = 'table';
                 renderizarUI();
-            } catch (error) {
-                alert("Error de conexión con la BBDD");
-            }
+            } catch (e) { console.error(e); }
         }
 
         function cambiarFiltro(f) {
@@ -103,59 +92,47 @@
         }
 
         function renderizarUI() {
-            const hoy = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const hoy = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0');
+            
             const cuerpo = document.getElementById('lista-citas');
+            const citasHoy = todasLasCitas.filter(c => c[5].includes(hoy));
             
-            // 1. Filtrar citas
-            const citasFiltradas = todasLasCitas.filter(c => filtroActual === 'all' ? true : c[5] === hoy);
-            
-            // 2. Calcular Métricas
-            const citasHoy = todasLasCitas.filter(c => c[5] === hoy);
-            let totalCaja = 0;
-            citasHoy.forEach(c => { if(precios[c[4]]) totalCaja += precios[c[4]]; });
-
+            // Métricas
+            let caja = 0;
+            citasHoy.forEach(c => { if(precios[c[4]]) caja += precios[c[4]]; });
             document.getElementById('total-citas').innerText = citasHoy.length;
-            document.getElementById('ingresos-hoy').innerText = totalCaja + "€";
+            document.getElementById('ingresos-hoy').innerText = caja + "€";
+
+            const filtered = filtroActual === 'all' ? todasLasCitas : citasHoy;
             
-            // Calcular próxima cita
-            const ahora = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', hour12:false});
-            const proximas = citasHoy.filter(c => c[6] > ahora).sort((a,b) => a[6] > b[6] ? 1 : -1);
+            // Calcular próxima cita hoy
+            const horaActual = now.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', hour12:false});
+            const proximas = citasHoy.filter(c => c[6] > horaActual).sort((a,b) => a[6] > b[6] ? 1 : -1);
             document.getElementById('proxima-cita').innerText = proximas.length > 0 ? proximas[0][6] : "--:--";
 
-            // 3. Generar Tabla
-            cuerpo.innerHTML = citasFiltradas.reverse().map(cita => `
-                <tr class="hover:bg-gray-50 transition-colors group">
-                    <td class="p-5">
-                        <span class="text-[10px] font-bold block text-gray-400 uppercase tracking-tighter">${cita[5]}</span>
-                        <span class="text-lg font-800">${cita[6]}</span>
-                    </td>
-                    <td class="p-5">
-                        <span class="text-xs font-bold uppercase block tracking-tight">${cita[1]}</span>
-                        <span class="text-[10px] text-gray-400 font-medium">${cita[2]}</span>
-                    </td>
-                    <td class="p-5">
-                        <span class="text-[9px] px-2 py-1 border border-black uppercase font-bold italic">${cita[4]}</span>
-                    </td>
+            if(filtered.length === 0) {
+                cuerpo.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-[10px] uppercase text-gray-300">Sin citas</td></tr>`;
+                return;
+            }
+
+            cuerpo.innerHTML = filtered.sort((a,b) => a[5]+a[6] > b[5]+b[6] ? 1 : -1).map(cita => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-5 font-800 text-2xl tracking-tighter italic">${cita[6]}</td>
+                    <td class="p-5 text-xs uppercase font-bold">${cita[1]}<br><span class="text-[9px] font-normal text-gray-400">${cita[5]}</span></td>
+                    <td class="p-5"><span class="text-[9px] border border-black px-2 py-1 font-bold uppercase italic">${cita[4]}</span></td>
                     <td class="p-5 text-right space-x-2">
-                        <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="inline-block p-2 border border-black hover:bg-green-500 hover:text-white hover:border-green-500 transition-all">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.168.823-.33.05-.654.085-1.747-.336-1.42-.549-2.336-1.992-2.407-2.087-.071-.094-.614-.817-.614-1.558 0-.741.387-1.107.525-1.258.137-.152.3-.19.4-.19.1 0 .201.001.289.004.09.003.212-.034.331.253.123.296.423 1.031.46 1.107.037.076.061.165.011.266-.05.101-.076.165-.152.253-.076.089-.159.198-.227.266-.076.076-.156.158-.067.31.089.152.396.654.851 1.06.585.52 1.077.681 1.23.757.152.076.241.063.33-.038.089-.101.383-.445.484-.596.101-.152.203-.127.343-.076.14.051.888.419 1.041.495.152.076.253.114.291.177.038.063.038.368-.106.773z"/></svg>
-                        </a>
-                        <button onclick="cancelarCita('${cita[7]}')" class="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
+                        <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="inline-block p-2 border border-black hover:bg-black hover:text-white transition-all font-bold text-[10px]">WA</a>
+                        <button onclick="cancelarCita('${cita[7]}')" class="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all font-bold text-[10px]">Anular</button>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`).join('');
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Deseas anular la cita y borrarla de Google Calendar?")) return;
-            
-            // Optimismo: Quitar la fila de la vista antes de que el servidor responda
-            todasLasCitas = todasLasCitas.filter(c => c[7] !== id);
-            renderizarUI();
-
-            await fetch(urlScript, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'cancel', eventId: id })
-            });
+            if(!confirm("¿Anular cita en Calendar y BBDD?")) return;
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
+            cargarAgenda();
+        }
+    </script>
+</body>
+</html>
