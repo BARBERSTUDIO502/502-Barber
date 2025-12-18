@@ -10,14 +10,14 @@
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
         .tab-active { background: black; color: white; }
-        input, select { border-bottom: 1px solid black !important; outline: none; }
-        /* Notas: Estilo para la ventana flotante de edición */
-        #modal-editor { background: rgba(0,0,0,0.8); z-index: 50; }
+        input, select, textarea { border-bottom: 1px solid black !important; outline: none; }
+        /* Notas: Estilo para las ventanas flotantes */
+        .modal-overlay { background: rgba(0,0,0,0.8); z-index: 50; }
     </style>
 </head>
 <body class="p-2 md:p-10">
     
-    <div id="modal-editor" class="hidden fixed inset-0 flex items-center justify-center p-4">
+    <div id="modal-editor" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm p-8 shadow-2xl border border-black">
             <h3 class="text-xl font-800 uppercase tracking-tighter mb-6">Modificar Cita</h3>
             <div class="space-y-6">
@@ -34,6 +34,26 @@
                 <div class="flex gap-2 pt-4">
                     <button onclick="cerrarEditor()" class="flex-1 py-3 text-[10px] uppercase font-bold border border-black hover:bg-gray-100">Cancelar</button>
                     <button onclick="guardarCambios()" class="flex-1 py-3 text-[10px] uppercase font-bold bg-black text-white shadow-lg">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-ficha" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md p-8 shadow-2xl border border-black">
+            <div class="flex justify-between items-start mb-6">
+                <h3 class="text-xl font-800 uppercase tracking-tighter">Ficha del Cliente</h3>
+                <span id="ficha-email" class="text-[9px] text-gray-400 font-bold uppercase"></span>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <p id="ficha-nombre" class="text-lg font-bold uppercase mb-4 border-b border-gray-100 pb-2"></p>
+                    <label class="text-[10px] uppercase font-bold text-gray-400 block mb-2">Notas Técnicas (Corte, productos, etc.)</label>
+                    <textarea id="ficha-notas" rows="5" class="w-full p-3 bg-gray-50 border-none text-sm" placeholder="Ej: Degradado al 0.5, tijera arriba, usa pomada mate..."></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="cerrarFicha()" class="flex-1 py-3 text-[10px] uppercase font-bold border border-black">Cerrar</button>
+                    <button onclick="guardarNotas()" class="flex-1 py-3 text-[10px] uppercase font-bold bg-black text-white">Guardar Notas</button>
                 </div>
             </div>
         </div>
@@ -66,8 +86,8 @@
         </div>
 
         <div class="flex gap-2 mb-6 px-2">
-            <button id="btn-hoy" onclick="cambiarFiltro('today')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest tab-active transition-all">Hoy</button>
-            <button id="btn-todos" onclick="cambiarFiltro('all')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest transition-all">Todo</button>
+            <button id="btn-hoy" onclick="cambiarFiltro('today')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest tab-active">Hoy</button>
+            <button id="btn-todos" onclick="cambiarFiltro('all')" class="border border-black px-5 py-2 text-[9px] font-bold uppercase tracking-widest">Todo</button>
         </div>
 
         <div class="bg-white border-y md:border border-black overflow-hidden shadow-sm">
@@ -92,6 +112,14 @@
         let filtroActual = 'today';
         let citaEditandoId = null;
         const precios = { "Corte y lavado": 13, "Corte + barba": 17, "Arreglo barba": 7 };
+
+        // Función para formatear fecha elegantemente
+        function formatearFechaElegante(fechaStr) {
+            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            const partes = fechaStr.split("-");
+            if(partes.length < 3) return fechaStr;
+            return parseInt(partes[2]) + " de " + meses[parseInt(partes[1]) - 1] + " de " + partes[0];
+        }
 
         window.onload = () => {
             const pass = prompt("Contraseña de Acceso:");
@@ -131,7 +159,7 @@
             document.getElementById('ingresos-hoy').innerText = caja + "€";
 
             const filtered = filtroActual === 'all' ? todasLasCitas : citasHoy;
-            const horaActual = now.getHours() + ":" + now.getMinutes();
+            const horaActual = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
             const proximas = citasHoy.filter(c => c[6] > horaActual).sort((a,b) => a[6] > b[6] ? 1 : -1);
             document.getElementById('proxima-cita').innerText = proximas.length > 0 ? proximas[0][6] : "--";
 
@@ -139,9 +167,9 @@
                 <tr class="hover:bg-gray-50 transition-all">
                     <td class="p-4 font-800 text-xl md:text-2xl italic tracking-tighter">${cita[6]}</td>
                     <td class="p-4">
-                        <div class="flex flex-col">
-                            <span class="text-[11px] font-bold uppercase truncate">${cita[1]}</span>
-                            <span class="text-[8px] text-gray-300 mt-1">${cita[5]}</span>
+                        <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${cita[3]}', '${cita[1]}')">
+                            <span class="text-[11px] font-bold uppercase truncate group-hover:underline">${cita[1]}</span>
+                            <span class="text-[8px] text-gray-300 mt-1">${formatearFechaElegante(cita[5])}</span>
                         </div>
                     </td>
                     <td class="p-4 hidden md:table-cell">
@@ -161,15 +189,47 @@
                 </tr>`).join('');
         }
 
-        // --- LÓGICA DEL EDITOR MODAL ---
-        
+        // --- LÓGICA DE FICHA DE CLIENTE ---
+        async function abrirFichaCliente(email, nombre) {
+            if(!email || email === "N/A") return alert("Este cliente no proporcionó email para vincular ficha.");
+            
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const res = await fetch(`${urlScript}?action=getClientInfo&email=${email}`);
+                const info = await res.json();
+                
+                document.getElementById('ficha-nombre').innerText = nombre;
+                document.getElementById('ficha-email').innerText = email;
+                document.getElementById('ficha-notas').value = info.notas || "";
+                document.getElementById('modal-ficha').classList.remove('hidden');
+            } catch (e) { alert("Error al cargar la ficha"); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function guardarNotas() {
+            const email = document.getElementById('ficha-email').innerText;
+            const notas = document.getElementById('ficha-notas').value;
+            
+            document.getElementById('loading').style.display = 'block';
+            try {
+                await fetch(urlScript, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'saveClientNotes', email: email, notas: notas })
+                });
+                alert("Notas técnicas guardadas.");
+                cerrarFicha();
+            } catch (e) { alert("Error al guardar"); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function cerrarFicha() { document.getElementById('modal-ficha').classList.add('hidden'); }
+
+        // --- LÓGICA DEL EDITOR DE FECHA ---
         async function abrirEditor(id, fecha, hora) {
             citaEditandoId = id;
             document.getElementById('edit-fecha').value = fecha;
             document.getElementById('modal-editor').classList.remove('hidden');
             await cargarHorasEditor(fecha, hora);
-            
-            // Notas: Recargar disponibilidad si se cambia la fecha en el modal
             document.getElementById('edit-fecha').onchange = (e) => cargarHorasEditor(e.target.value, "");
         }
 
@@ -180,7 +240,6 @@
                 const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
                 const ocupadas = await res.json();
                 const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-                
                 select.innerHTML = horarios.map(h => {
                     const ocupada = ocupadas.includes(h) && h !== horaActual;
                     return `<option value="${h}" ${ocupada ? 'disabled style="color:#ccc"' : ''} ${h === horaActual ? 'selected' : ''}>${h}${ocupada ? ' (Ocupada)' : ''}</option>`;
@@ -188,20 +247,14 @@
             } catch (e) { select.innerHTML = '<option value="">Error</option>'; }
         }
 
-        function cerrarEditor() {
-            document.getElementById('modal-editor').classList.add('hidden');
-            citaEditandoId = null;
-        }
+        function cerrarEditor() { document.getElementById('modal-editor').classList.add('hidden'); }
 
         async function guardarCambios() {
             const nuevaFecha = document.getElementById('edit-fecha').value;
             const nuevaHora = document.getElementById('edit-hora').value;
-            
-            if(!nuevaFecha || !nuevaHora) return alert("Selecciona fecha y hora válida");
-
+            if(!nuevaFecha || !nuevaHora) return alert("Selecciona fecha y hora");
             document.getElementById('loading').style.display = 'block';
             cerrarEditor();
-
             try {
                 await fetch(urlScript, {
                     method: 'POST',
