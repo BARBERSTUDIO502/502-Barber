@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
     <title>502 Barber Studio</title>
+
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
+        /* Notas: Estilo minimalista para los inputs */
         input, select { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
+        /* Notas: Animación de entrada para la confirmación */
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
@@ -65,7 +70,7 @@
                     <div class="grid grid-cols-2 gap-6">
                         <input type="date" id="fecha" class="w-full py-3 text-sm bg-transparent">
                         <select id="hora" class="w-full py-3 text-sm bg-transparent italic font-bold text-center">
-                            <option>--:--</option>
+                            <option value="">Consultando...</option>
                         </select>
                     </div>
 
@@ -83,28 +88,20 @@
                 
                 <div class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4">
                     <p>Estimado cliente,</p>
-                    <p>Le confirmamos que su reserva ha sido registrada correctamente. A continuación, los detalles de su visita:</p>
+                    <p>Le confirmamos que su reserva ha sido registrada correctamente:</p>
                     <ul class="space-y-1 ml-2 font-semibold uppercase text-[11px] tracking-wider">
                         <li>Servicio: <span id="res-servicio" class="text-black"></span></li>
                         <li>Día: <span id="res-fecha" class="text-black"></span></li>
                         <li>Hora: <span id="res-hora" class="text-black"></span></li>
-                        <li>Ubicación: <span class="text-black text-[10px]">C. Mármoles, 41, 29007 Málaga</span></li>
+                        <li>Ubicación: <span class="text-black">C. Mármoles, 41, 29007 Málaga</span></li>
                     </ul>
-                    <p class="pt-2">Puedes consultar la ruta aquí:</p>
-                    <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="text-black font-bold underline block">📍 Ver ubicación en Google Maps</a>
-                    
-                    <p>Conoce nuestros trabajos:</p>
-                    <a href="https://instagram.com/502barberstudio" target="_blank" class="text-black font-bold underline block">📷 Instagram @502barberstudio</a>
-                    
-                    <p class="text-[10px] italic text-gray-500 pt-4">Rogamos que, en caso de no poder asistir, nos lo comunique con antelación.</p>
+                    <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="text-black font-bold underline block mt-2">📍 Ver en Google Maps</a>
                 </div>
                 
                 <div class="w-full space-y-3">
                     <a id="link-gcal" target="_blank" class="block w-full border-2 border-black bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center">Añadir a Google Calendar</a>
-                    
-                    <a href="https://wa.me/34600000000?text=Hola,%20quisiera%20modificar%20mi%20cita" target="_blank" class="block w-full border-2 border-gray-200 text-gray-800 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-gray-50">Modificar o Cancelar Cita</a>
-                    
-                    <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Nueva reserva</button>
+                    <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-gray-50">Modificar o Cancelar</a>
+                    <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4 text-center">Nueva reserva</button>
                 </div>
             </div>
 
@@ -112,82 +109,110 @@
     </div>
 
     <script>
-    const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
+        // Notas: URL de tu Script de Google
+        const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
 
-    const fechaInput = document.getElementById('fecha');
-    const hoy = new Date().toISOString().split('T')[0];
-    fechaInput.setAttribute('min', hoy);
-    fechaInput.value = hoy;
-
-    async function cargarHorarios(fechaSel) {
-        const select = document.getElementById('hora');
-        select.innerHTML = '<option>Cargando...</option>';
-        try {
-            const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
-            const ocupadas = await res.json();
-            const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-            const ahora = new Date();
-            const esHoy = fechaSel === hoy;
-            const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
-
-            select.innerHTML = horarios.map(h => {
-                const [h_hora, h_min] = h.split(':').map(Number);
-                const minutosOpcion = (h_hora * 60) + h_min;
-                const estaOcupada = ocupadas.includes(h);
-                const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
-                const deshabilitar = estaOcupada || esPasada;
-                return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
-            }).join('');
-        } catch (e) { select.innerHTML = '<option>Error</option>'; }
-    }
-
-    cargarHorarios(hoy);
-    fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
-
-    async function confirmarCita() {
-        const btn = document.getElementById('btn-reserva');
-        const d = {
-            nombre: document.getElementById('nombre').value.trim(),
-            telefono: document.getElementById('telefono').value.trim(),
-            servicio: document.getElementById('servicio').value,
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            email: document.getElementById('email').value.trim()
+        const fechaInput = document.getElementById('fecha');
+        const hoy = new Date().toISOString().split('T')[0];
+        
+        // --- INICIALIZACIÓN DE LA WEB ---
+        // Notas: Al cargar, ponemos la fecha de hoy y pedimos los horarios libres
+        window.onload = () => {
+            fechaInput.setAttribute('min', hoy);
+            fechaInput.value = hoy;
+            cargarHorarios(hoy);
         };
 
-        if(!d.nombre || !d.fecha || d.hora.includes("--")) return alert("Completa todos los datos");
-        
-        btn.innerText = "PROCESANDO..."; btn.disabled = true;
-        
-        try {
-            await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+        // --- FUNCIÓN: CONSULTAR DISPONIBILIDAD ---
+        // Notas: Filtra horarios pasados si es el día de hoy
+        async function cargarHorarios(fechaSel) {
+            const select = document.getElementById('hora');
+            select.innerHTML = '<option value="">Consultando...</option>';
             
-            // Llenar vista éxito
-            document.getElementById('res-servicio').innerText = d.servicio;
-            document.getElementById('res-fecha').innerText = d.fecha;
-            document.getElementById('res-hora').innerText = d.hora + " HS";
+            try {
+                const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
+                const ocupadas = await res.json();
+                
+                const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
+                
+                const ahora = new Date();
+                const esHoy = fechaSel === hoy;
+                const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
 
-            document.getElementById('vista-formulario').classList.add('hidden');
-            document.getElementById('vista-exito').classList.remove('hidden');
-            
-            // Google Calendar
-            const dateParts = d.fecha.replace(/-/g, '');
-            const timeParts = d.hora.replace(':', '');
-            const start = `${dateParts}T${timeParts}00`;
-            const end = `${dateParts}T${(parseInt(timeParts.substring(0,2))+1)}${timeParts.substring(2,4)}00`;
-            
-            const location = encodeURIComponent("502 Barber Studio, C. Mármoles, 41, Distrito Centro, 29007 Málaga, España");
-            const title = encodeURIComponent("Cita 502 Barber Studio");
-            const details = encodeURIComponent(`Servicio: ${d.servicio}\nCliente: ${d.nombre}`);
-
-            document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
-            
-        } catch (e) { 
-            alert("Error"); 
-            btn.disabled = false; 
-            btn.innerText = "Confirmar Reserva";
+                select.innerHTML = horarios.map(h => {
+                    const [h_hora, h_min] = h.split(':').map(Number);
+                    const minutosOpcion = (h_hora * 60) + h_min;
+                    const estaOcupada = ocupadas.includes(h);
+                    const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
+                    
+                    const deshabilitar = estaOcupada || esPasada;
+                    return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
+                }).join('');
+            } catch (e) { select.innerHTML = '<option value="">Error al cargar</option>'; }
         }
-    }
+
+        // Notas: Actualizar horas cuando el usuario cambia la fecha
+        fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
+
+        // --- FUNCIÓN: CONFIRMAR RESERVA ---
+        // Notas: Valida los campos, envía al servidor y prepara la vista de éxito
+        async function confirmarCita() {
+            const btn = document.getElementById('btn-reserva');
+            const d = {
+                nombre: document.getElementById('nombre').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                servicio: document.getElementById('servicio').value,
+                fecha: document.getElementById('fecha').value,
+                hora: document.getElementById('hora').value,
+                email: document.getElementById('email').value.trim()
+            };
+
+            // Validación de teléfono (9 números o prefijo +)
+            const phoneRegex = /^(\+\d+)?\d{9}$/;
+            if (!phoneRegex.test(d.telefono)) return alert("Introduce un teléfono válido.");
+
+            if(!d.nombre || !d.fecha || !d.hora || d.hora === "" || d.hora.includes("Consultando")) {
+                return alert("Completa todos los campos obligatorios.");
+            }
+            
+            btn.innerText = "PROCESANDO..."; btn.disabled = true;
+            
+            try {
+                // Envío de datos al GS (activará el envío del email automático)
+                await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
+                
+                // Mostrar resumen en pantalla
+                document.getElementById('res-servicio').innerText = d.servicio;
+                document.getElementById('res-fecha').innerText = d.fecha;
+                document.getElementById('res-hora').innerText = d.hora + " HS";
+
+                document.getElementById('vista-formulario').classList.add('hidden');
+                document.getElementById('vista-exito').classList.remove('hidden');
+                
+                // Notas: Configuración enlace WhatsApp para cancelar
+                const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${d.fecha} a las ${d.hora}.`);
+                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${mensajeWa}`;
+
+                // Notas: Configuración Google Calendar con dirección Calle Mármoles 41
+                const dateParts = d.fecha.replace(/-/g, '');
+                const timeParts = d.hora.replace(':', '');
+                const start = `${dateParts}T${timeParts}00`;
+                let endHour = parseInt(timeParts.substring(0,2));
+                let endMin = parseInt(timeParts.substring(2,4)) + 30;
+                if(endMin >= 60) { endMin = "00"; endHour += 1; }
+                const end = `${dateParts}T${endHour.toString().padStart(2,'0')}${endMin.toString().padStart(2,'0')}00`;
+                
+                const gLocation = encodeURIComponent("502 Barber Studio, Calle Mármoles 41, 29007 Málaga");
+                const gTitle = encodeURIComponent("Mi Cita en 502 Barber Studio");
+
+                document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gTitle}&dates=${start}/${end}&location=${gLocation}`;
+                
+            } catch (e) { 
+                alert("Hubo un error al conectar."); 
+                btn.disabled = false; 
+                btn.innerText = "Confirmar Reserva";
+            }
+        }
     </script>
 </body>
 </html>
