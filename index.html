@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="flex justify-center gap-8 mb-4">
-                    <a href="https://share.google/Z1tioHRBYs8MNiXOu" target="_blank" class="hover:scale-110 transition-transform">
+                    <a href="http://googleusercontent.com/maps.google.com/43" target="_blank" class="hover:scale-110 transition-transform">
                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                         </svg>
@@ -116,9 +116,45 @@
     </div>
 
     <script>
-    async function confirmarCita() {
-        const urlScript = 'https://script.google.com/macros/s/AKfycbySwZ_0aJAx1mSbvnc0u2m_w66VaTIJFdgwXzJGAKiOwFWJr2fYEL1rSguw8u3qEVjK/exec'; 
+    const urlScript = 'https://script.google.com/macros/s/AKfycbySwZ_0aJAx1mSbvnc0u2m_w66VaTIJFdgwXzJGAKiOwFWJr2fYEL1rSguw8u3qEVjK/exec'; 
+
+    // --- 1. FUNCIÓN PARA COMPROBAR DISPONIBILIDAD (Nivel Global) ---
+    document.getElementById('fecha').addEventListener('change', async (e) => {
+        const fechaSeleccionada = e.target.value;
+        const selectHora = document.getElementById('hora');
         
+        selectHora.disabled = true;
+        selectHora.innerHTML = '<option>Cargando...</option>';
+
+        try {
+            const res = await fetch(`${urlScript}?fecha=${fechaSeleccionada}`);
+            const horasOcupadas = await res.json();
+
+            // Reset de opciones originales
+            selectHora.innerHTML = `
+                <option>10:00</option><option>10:30</option><option>11:00</option><option>11:30</option>
+                <option>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option><option>14:00</option><option>14:30</option>
+                <option>16:00</option><option>16:30</option><option>17:00</option><option>17:30</option>
+                <option>18:00</option><option>18:30</option><option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
+            `;
+
+            Array.from(selectHora.options).forEach(option => {
+                if (horasOcupadas.includes(option.value)) {
+                    option.disabled = true;
+                    option.text = option.value + " (Ocupado)";
+                    option.style.color = "#ccc";
+                }
+            });
+        } catch (err) {
+            console.error("Error al cargar horas:", err);
+            selectHora.innerHTML = '<option>Error al cargar</option>';
+        } finally {
+            selectHora.disabled = false;
+        }
+    });
+
+    // --- 2. FUNCIÓN PARA CONFIRMAR RESERVA ---
+    async function confirmarCita() {
         const btn = document.getElementById('btn-reserva');
         const d = {
             nombre: document.getElementById('nombre').value,
