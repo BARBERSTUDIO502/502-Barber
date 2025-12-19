@@ -34,35 +34,35 @@
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 id="ficha-nombre" class="text-2xl font-800 italic uppercase">Nombre</h2>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Atributo: Notas Técnicas</p>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Atributo: Notas Técnicas (Ficha Cliente)</p>
                 </div>
                 <button onclick="cerrarModal('modal-ficha')" class="text-2xl">✕</button>
             </div>
-            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Notas sobre el cabello, degradado o técnica utilizada..."></textarea>
-            <button onclick="guardarNotas()" class="w-full bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Guardar en Ficha</button>
+            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Escribe aquí los detalles técnicos del corte..."></textarea>
+            <button onclick="guardarNotas()" class="w-full bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Actualizar Ficha</button>
         </div>
     </div>
 
     <div id="modal-edit" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
         <div class="bg-white modal-content w-full max-w-md p-8">
             <div class="flex justify-between items-start mb-6">
-                <h2 class="text-2xl font-800 italic uppercase">Reagendar</h2>
+                <h2 class="text-2xl font-800 italic uppercase">Reagendar Cita</h2>
                 <button onclick="cerrarModal('modal-edit')" class="text-2xl">✕</button>
             </div>
             <input type="hidden" id="edit-id">
             <input type="hidden" id="edit-barbero-actual">
             <div class="space-y-6">
                 <div>
-                    <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Fecha</label>
-                    <input type="date" id="edit-fecha" class="w-full py-2 font-bold" onchange="validarDisponibilidadEdit()">
+                    <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Fecha de la nueva cita</label>
+                    <input type="date" id="edit-fecha" class="w-full py-2 font-bold" onchange="actualizarHorasEdit()">
                 </div>
                 <div>
-                    <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Hora (Disponibles)</label>
-                    <select id="edit-hora" class="w-full py-2 font-bold bg-white" onchange="validarDisponibilidadEdit()"></select>
+                    <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Horas Disponibles</label>
+                    <select id="edit-hora" class="w-full py-2 font-bold bg-white"></select>
                 </div>
-                <div id="edit-aviso" class="text-[10px] font-bold text-red-500 uppercase hidden italic">⚠️ Barbero bloqueado u hora ocupada</div>
+                <p id="edit-aviso" class="text-[10px] font-bold text-gray-400 uppercase italic">Solo se muestran turnos libres para este barbero.</p>
             </div>
-            <button id="btn-confirmar-edit" onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800">Confirmar Cambio</button>
+            <button id="btn-confirmar-edit" onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800 transition-all">Confirmar Cambio en Calendario</button>
         </div>
     </div>
 
@@ -90,7 +90,7 @@
             <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="tab-btn px-10 py-4 text-[11px] font-bold uppercase tracking-widest">Equipo</button>
         </nav>
 
-        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold italic">Sincronizando...</div>
+        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold italic">Sincronizando con Google Calendar...</div>
 
         <section id="section-citas" class="fade-in bg-white border border-black p-4">
             <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase text-gray-400">
@@ -106,11 +106,7 @@
                     <button onclick="renderizarCitas()" class="bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left table-auto">
-                    <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
-                </table>
-            </div>
+            <div class="overflow-x-auto"><table class="w-full text-left table-auto"><tbody id="lista-citas" class="divide-y divide-gray-100"></tbody></table></div>
         </section>
 
         <section id="section-calendario" class="hidden fade-in bg-white border border-black p-6">
@@ -128,7 +124,7 @@
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <h4 class="text-[10px] font-800 uppercase mb-4 text-gray-400 tracking-widest italic">Historial de Bloqueos</h4>
+                    <h4 class="text-[10px] font-800 uppercase mb-4 text-gray-400 tracking-widest italic">Bloqueos Registrados</h4>
                     <div id="lista-cierres" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -137,7 +133,7 @@
         <section id="section-equipo" class="hidden fade-in bg-white border border-black p-6">
             <div class="max-w-2xl">
                 <div class="card-admin p-8 mb-8 border-dashed">
-                    <h4 class="text-xs font-800 uppercase mb-4 italic">Gestión de Barberos</h4>
+                    <h4 class="text-xs font-800 uppercase mb-4 italic">Alta de Barberos</h4>
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <input type="text" id="new-barber-name" placeholder="Nombre completo" class="flex-1 py-2 text-sm uppercase font-bold">
                         <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir</button>
@@ -153,7 +149,7 @@
         let todasLasCitas = [], todosLosBarberos = [], todosLosCierres = [];
         let filtroCitas = 'hoy';
         const precios = { "Corte y lavado": 13, "Corte + barba": 17, "Arreglo barba": 7 };
-        const horasDisponibles = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+        const horasBase = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
 
         window.onload = () => {
             const pass = prompt("Acceso 502:");
@@ -162,14 +158,8 @@
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
                 document.getElementById('cierre-fecha').value = hoy;
+                document.getElementById('edit-fecha').min = hoy; // No fechas pasadas en edición
                 
-                const selectHora = document.getElementById('edit-hora');
-                horasDisponibles.forEach(h => {
-                    let opt = document.createElement('option');
-                    opt.value = h; opt.innerText = h;
-                    selectHora.appendChild(opt);
-                });
-
                 const cache = localStorage.getItem('barber502Cache');
                 if(cache) { procesarDatos(JSON.parse(cache)); }
                 cargarAgenda(false);
@@ -196,76 +186,87 @@
         function abrirFicha(id, nombre, notas) {
             currentClientEditId = id;
             document.getElementById('ficha-nombre').innerText = nombre;
-            // c[9] son las Notas Técnicas
             document.getElementById('ficha-notas').value = (notas && notas !== 'undefined') ? notas : "";
             document.getElementById('modal-ficha').classList.remove('hidden');
         }
 
+        // --- LÓGICA DE REAGENDAMIENTO (EDICIÓN) ---
         function abrirEditor(id, fecha, hora, barbero) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-barbero-actual').value = barbero;
             document.getElementById('edit-fecha').value = normalizeDate(fecha);
-            document.getElementById('edit-hora').value = hora;
+            actualizarHorasEdit(hora); 
             document.getElementById('modal-edit').classList.remove('hidden');
-            validarDisponibilidadEdit();
         }
 
-        function validarDisponibilidadEdit() {
-            const fecha = document.getElementById('edit-fecha').value;
-            const hora = document.getElementById('edit-hora').value;
+        function actualizarHorasEdit(horaActual = null) {
+            const fechaSel = document.getElementById('edit-fecha').value;
             const barbero = document.getElementById('edit-barbero-actual').value;
-            const aviso = document.getElementById('edit-aviso');
-            const btn = document.getElementById('btn-confirmar-edit');
+            const selectHora = document.getElementById('edit-hora');
+            const ahora = new Date();
+            const hoyStr = ahora.toISOString().split('T')[0];
+            const horaActualNum = ahora.getHours() * 100 + ahora.getMinutes();
 
-            const bloqueado = todosLosCierres.some(c => {
-                const fCierre = normalizeDate(c[0]);
-                if (fCierre !== fecha || c[1] !== barbero) return false;
-                if (c[4] === "Día Completo") return true;
-                const hNum = parseInt(hora.replace(':',''));
-                if (c[4] === "Mañana" && hNum < 1500) return true;
-                if (c[4] === "Tarde" && hNum >= 1500) return true;
-                return false;
+            selectHora.innerHTML = "";
+            
+            horasBase.forEach(h => {
+                const hNum = parseInt(h.replace(':',''));
+                
+                // 1. Filtro pasado (si es hoy)
+                if (fechaSel === hoyStr && hNum <= horaActualNum) return;
+
+                // 2. Filtro bloqueos (cierres)
+                const bloqueado = todosLosCierres.some(c => {
+                    if (normalizeDate(c[0]) !== fechaSel || c[1] !== barbero) return false;
+                    if (c[4] === "Día Completo") return true;
+                    if (c[4] === "Mañana" && hNum < 1500) return true;
+                    if (c[4] === "Tarde" && hNum >= 1500) return true;
+                    return false;
+                });
+                if (bloqueado) return;
+
+                // 3. Filtro ocupados (otras citas)
+                const ocupado = todasLasCitas.some(c => 
+                    normalizeDate(c[5]) === fechaSel && c[6] === h && c[8] === barbero && 
+                    c[7] !== document.getElementById('edit-id').value && !String(c[1]).includes("CANCELADA")
+                );
+                if (ocupado) return;
+
+                let opt = document.createElement('option');
+                opt.value = h; opt.innerText = h;
+                if(h === horaActual) opt.selected = true;
+                selectHora.appendChild(opt);
             });
-
-            const ocupado = todasLasCitas.some(c => 
-                normalizeDate(c[5]) === fecha && c[6] === hora && c[8] === barbero && 
-                c[7] !== document.getElementById('edit-id').value && !String(c[1]).includes("CANCELADA")
-            );
-
-            if (bloqueado || ocupado) {
-                aviso.classList.remove('hidden');
-                btn.disabled = true;
-                btn.classList.add('opacity-50');
-            } else {
-                aviso.classList.add('hidden');
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
-            }
         }
 
         async function confirmarEdicion() {
             const id = document.getElementById('edit-id').value;
             const fecha = document.getElementById('edit-fecha').value;
             const hora = document.getElementById('edit-hora').value;
+            if(!hora) return alert("No hay turnos disponibles para esta fecha.");
+            
             document.getElementById('loading').classList.remove('hidden');
             cerrarModal('modal-edit');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'editAppointment', eventId: id, fecha: fecha, hora: hora }) });
             cargarAgenda();
         }
 
-        async function guardarNotas() {
-            const notas = document.getElementById('ficha-notas').value;
-            document.getElementById('loading').classList.remove('hidden');
-            cerrarModal('modal-ficha');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'updateNotes', eventId: currentClientEditId, notas: notas }) });
-            cargarAgenda();
+        // --- WHATSAPP CON MENSAJE AUTOMÁTICO ---
+        function mensajeWhatsApp(tel, nombre, servicio, fecha, hora, accion) {
+            const num = String(tel).replace(/\D/g, '');
+            const fCita = formatFechaLarga(fecha);
+            let msg = "";
+            
+            if(accion === 'edit') {
+                msg = `Hola ${nombre}, te contacto de 502 Barber Studio por tu cita de ${servicio} el día ${fCita} a las ${hora}. ¿Necesitas realizar algún cambio?`;
+            } else {
+                msg = `Hola ${nombre}, lamentamos informarte que tu cita de ${servicio} para el ${fCita} ha sido cancelada. Por favor, contacta con nosotros para reagendar.`;
+            }
+            
+            window.open(`https://wa.me/${num.startsWith('34') ? num : '34'+num}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        function abrirWhatsApp(telefono) {
-            const num = String(telefono).replace(/\D/g, '');
-            window.open(`https://wa.me/${num.startsWith('34') ? num : '34'+num}`, '_blank');
-        }
-
+        // --- BACKEND Y RENDER ---
         async function cargarAgenda(showLoading = true) {
             if(showLoading) document.getElementById('loading').classList.remove('hidden');
             try {
@@ -297,7 +298,6 @@
             
             const hoyCitas = validas.filter(c => normalizeDate(c[5]) === hoyStr);
             let totalCaja = 0;
-            // El servicio está en c[4], no en c[3]
             hoyCitas.forEach(c => { 
                 const servKey = String(c[4]).trim();
                 totalCaja += precios[servKey] || 0; 
@@ -309,39 +309,37 @@
             const proximas = hoyCitas.filter(c => c[6] >= ahoraHora).sort((a,b)=>a[6].localeCompare(b[6]));
             document.getElementById('proxima-cita').innerText = proximas.length > 0 ? proximas[0][6] : "--";
 
-            let filtered = [];
-            if(filtroCitas === 'hoy') filtered = hoyCitas;
-            else if(filtroCitas === 'futuro') filtered = validas.filter(c => normalizeDate(c[5]) > hoyStr);
-            else if(filtroCitas === 'pasado') {
-                const d = document.getElementById('fecha-desde').value;
-                const h = document.getElementById('fecha-hasta').value;
-                filtered = validas.filter(c => { const fc = normalizeDate(c[5]); return fc >= d && fc <= h; });
-            }
+            let filtered = (filtroCitas === 'hoy') ? hoyCitas : (filtroCitas === 'futuro') ? validas.filter(c => normalizeDate(c[5]) > hoyStr) : validas.filter(c => {
+                const fc = normalizeDate(c[5]);
+                return fc >= document.getElementById('fecha-desde').value && fc <= document.getElementById('fecha-hasta').value;
+            });
             
             filtered.sort((a,b) => normalizeDate(a[5]).localeCompare(normalizeDate(b[5])) || a[6].localeCompare(b[6]));
 
             document.getElementById('lista-citas').innerHTML = filtered.map(c => {
-                // c[4] = Servicio, c[9] = Notas Técnicas
                 const notasTécnicas = c[9] ? String(c[9]).replace(/'/g, "\\'") : "";
                 const barbero = c[8] || 'Óscar';
                 return `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-2 md:p-4 font-800 text-lg italic w-16 md:w-24">${c[6]}</td>
+                    <td class="p-2 md:p-4 font-800 text-lg md:text-xl italic w-16 md:w-24">${c[6]}</td>
                     <td class="p-2 md:p-4">
-                        <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasTécnicas}')" class="text-[12px] font-800 uppercase hover:underline text-left block leading-tight mb-1">${c[1]}</button>
-                        <span class="text-[10px] font-bold uppercase text-black block mb-0.5">${c[4]}</span>
+                        <div class="flex flex-wrap items-baseline gap-2 leading-tight mb-1">
+                            <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasTécnicas}')" class="text-[12px] font-800 uppercase hover:underline">${c[1]}</button>
+                            <span class="text-[10px] font-bold uppercase text-gray-500 bg-gray-100 px-1 italic">${c[4]}</span>
+                        </div>
                         <span class="text-[8px] text-gray-400 font-bold uppercase block">${formatFechaLarga(c[5])} · ${barbero}</span>
                     </td>
-                    <td class="p-2 md:p-4 text-right">
+                    <td class="p-2 md:p-4 text-right actions-cell">
                         <div class="actions-container">
-                            <button onclick="abrirWhatsApp('${c[2]}')" class="btn-action"><svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg></button>
+                            <button onclick="mensajeWhatsApp('${c[2]}','${c[1]}','${c[4]}','${c[5]}','${c[6]}','edit')" class="btn-action"><svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg></button>
                             <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}', '${barbero}')" class="btn-action"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                            <button onclick="cancelarCita('${c[7]}')" class="border-2 border-red-500 text-red-500 px-1.5 py-0.5 text-[10px] font-bold hover:bg-red-500 hover:text-white transition-all">✕</button>
+                            <button onclick="cancelarCita('${c[7]}'); mensajeWhatsApp('${c[2]}','${c[1]}','${c[4]}','${c[5]}','${c[6]}','cancel')" class="border-2 border-red-500 text-red-500 px-1.5 py-0.5 text-[10px] font-bold hover:bg-red-500 hover:text-white transition-all">✕</button>
                         </div>
                     </td>
                 </tr>`}).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin citas registradas</td></tr>`;
         }
 
+        // --- FUNCIONES RESTANTES (MANTENIDAS) ---
         function renderizarCalendario() {
             const sel = document.getElementById('cierre-barbero');
             sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
@@ -356,11 +354,7 @@
             document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
                 const nombre = b[0].toLowerCase().trim();
                 const esOscar = nombre === "oscar" || nombre === "óscar";
-                return `
-                <div class="p-4 bg-white border border-black flex justify-between items-center">
-                    <span class="font-800 uppercase text-xs italic">${b[0]}</span>
-                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] text-gray-200 uppercase font-bold tracking-widest italic px-2">Propietario</span>`}
-                </div>`;
+                return `<div class="p-4 bg-white border border-black flex justify-between items-center"><span class="font-800 uppercase text-xs italic">${b[0]}</span>${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar Barbero</button>` : `<span class="text-[8px] text-gray-200 uppercase font-bold tracking-widest italic px-2">Propietario</span>`}</div>`;
             }).join('');
         }
 
@@ -415,6 +409,14 @@
             if(!confirm("¿Reabrir esta jornada?")) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha: f, barbero: b, tipo: t }) });
+            cargarAgenda();
+        }
+
+        async function guardarNotas() {
+            const notas = document.getElementById('ficha-notas').value;
+            document.getElementById('loading').classList.remove('hidden');
+            cerrarModal('modal-ficha');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'updateNotes', eventId: currentClientEditId, notas: notas }) });
             cargarAgenda();
         }
     </script>
