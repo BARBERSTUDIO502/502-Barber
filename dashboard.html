@@ -46,16 +46,18 @@
         <div id="loading" class="hidden p-10 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Comunicando con base de datos...</div>
 
         <section id="section-citas" class="fade-in">
-            <div class="flex flex-wrap items-center gap-6 mb-6 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                <button id="subtab-hoy" onclick="cambiarFiltro('hoy')" class="subtab-active pb-1">Hoy</button>
-                <button id="subtab-futuro" onclick="cambiarFiltro('futuro')" class="pb-1">Próximos</button>
-                <button id="subtab-pasado" onclick="cambiarFiltro('pasado')" class="pb-1">Pasados</button>
+            <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <div class="flex gap-4">
+                    <button id="subtab-hoy" onclick="cambiarFiltro('hoy')" class="subtab-active pb-1">Hoy</button>
+                    <button id="subtab-futuro" onclick="cambiarFiltro('futuro')" class="pb-1">Próximos</button>
+                    <button id="subtab-pasado" onclick="cambiarFiltro('pasado')" class="pb-1">Pasados</button>
+                </div>
                 
-                <div id="rango-pasados" class="hidden flex gap-2 items-center bg-gray-100 p-2 ml-auto border border-gray-200">
-                    <input type="date" id="fecha-desde" class="bg-transparent border-none text-[10px] font-bold">
+                <div id="rango-pasados" class="hidden flex flex-wrap gap-2 items-center bg-gray-100 p-2 border border-gray-200 w-full md:w-auto md:ml-auto">
+                    <input type="date" id="fecha-desde" class="flex-1 md:flex-none bg-transparent border-none text-[10px] font-bold min-w-[110px]">
                     <span>al</span>
-                    <input type="date" id="fecha-hasta" class="bg-transparent border-none text-[10px] font-bold">
-                    <button onclick="renderizarCitas()" class="bg-black text-white px-4 py-1 ml-2">Aplicar Filtro</button>
+                    <input type="date" id="fecha-hasta" class="flex-1 md:flex-none bg-transparent border-none text-[10px] font-bold min-w-[110px]">
+                    <button onclick="renderizarCitas()" class="w-full md:w-auto bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
                 </div>
             </div>
             <div class="bg-white border border-black overflow-hidden shadow-sm">
@@ -84,7 +86,7 @@
                             <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Día Completo</button>
                             
                             <div class="pt-4 border-t border-dashed border-gray-300">
-                                <p class="text-[8px] uppercase text-gray-400 mb-2">Intervalo específico (30 min):</p>
+                                <p class="text-[8px] uppercase text-gray-400 mb-2">Intervalo específico:</p>
                                 <div class="flex items-center gap-2">
                                     <select id="cierre-desde" class="flex-1 text-[10px] font-bold"></select>
                                     <span class="text-[9px]">a</span>
@@ -96,7 +98,7 @@
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400 px-2">Bloqueos Activos Sincronizados</h4>
+                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400 px-2">Bloqueos Confirmados</h4>
                     <div id="lista-cierres" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -106,7 +108,7 @@
             <div class="max-w-2xl">
                 <div class="card-admin p-8 mb-8 border-dashed">
                     <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Añadir Staff</h4>
-                    <div class="flex gap-4">
+                    <div class="flex flex-col md:flex-row gap-4">
                         <input type="text" id="new-barber-name" placeholder="Nombre del barbero" class="flex-1 py-2 text-sm uppercase font-bold">
                         <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Guardar</button>
                     </div>
@@ -158,7 +160,7 @@
                 renderizarCitas();
                 renderizarCalendario();
                 renderizarEquipo();
-            } catch (e) { alert("Error de conexión con Google Sheets"); }
+            } catch (e) { alert("Error de conexión"); }
             document.getElementById('loading').classList.add('hidden');
         }
 
@@ -181,7 +183,6 @@
             const hoyStr = new Date().toISOString().split('T')[0];
             const validas = todasLasCitas.filter(c => !c[1].includes("CANCELADA"));
             
-            // Stats
             const hoyV = validas.filter(c => c[5] === hoyStr);
             let caja = 0; hoyV.forEach(c => caja += (precios[c[4]] || 0));
             document.getElementById('total-citas').innerText = hoyV.length;
@@ -212,7 +213,7 @@
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </td>
-                </tr>`).join('') : `<tr><td class="p-10 text-center text-[10px] text-gray-400 uppercase">Sin citas en este periodo</td></tr>`;
+                </tr>`).join('') : `<tr><td class="p-10 text-center text-[10px] text-gray-400 uppercase">Sin citas</td></tr>`;
         }
 
         function renderizarCalendario() {
@@ -226,48 +227,50 @@
                 <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black fade-in">
                     <div>
                         <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase">${c[0]}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase">${c[0].split('T')[0]}</p>
                         <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold">${c[4]}</p>
                     </div>
                     <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2 hover:bg-red-50">✕</button>
                 </div>`).join('') : `<p class="text-[10px] text-gray-400 uppercase p-4 italic">No hay cierres próximos</p>`;
         }
 
-        // --- LÓGICA DE BLOQUEO CON VALIDACIÓN ---
+        // --- CORRECCIÓN CONFIRMACIÓN Y FORMATO DE FECHA ---
         async function intentarGuardarBloqueo(tipo) {
             const barber = document.getElementById('cierre-barbero').value;
-            const fecha = document.getElementById('cierre-fecha').value;
+            const fechaRaw = document.getElementById('cierre-fecha').value;
             let tipoFinal = tipo;
 
-            if(!fecha) return alert("Selecciona un día");
+            if(!fechaRaw) return alert("Selecciona un día");
             
+            // Forzar solo el string de fecha para evitar desfases de horas en Sheets
+            const fecha = fechaRaw.split('T')[0];
+
             if(tipo === 'Personalizado') {
                 const d = document.getElementById('cierre-desde').value;
                 const h = document.getElementById('cierre-hasta').value;
-                if(d >= h) return alert("La hora de inicio debe ser anterior a la de fin");
+                if(d >= h) return alert("Hora inválida");
                 tipoFinal = `${d} a ${h}`;
             }
 
-            // RESTRICCIÓN: Evitar duplicados exactos
-            const existe = todosLosCierres.find(c => c[0] === fecha && c[1] === barber && c[4] === tipoFinal);
-            if(existe) {
-                return alert(`ERROR: El barbero ${barber} ya tiene un bloqueo de tipo "${tipoFinal}" para el día ${fecha}.`);
-            }
+            // RESTRICCIÓN DUPLICADOS
+            const existe = todosLosCierres.find(c => c[0].split('T')[0] === fecha && c[1] === barber && c[4] === tipoFinal);
+            if(existe) return alert(`Ya existe un bloqueo de tipo "${tipoFinal}" para ${barber} este día.`);
 
-            if(!confirm(`¿Confirmar bloqueo para ${barber} el día ${fecha} (${tipoFinal})?`)) return;
+            // CONFIRMACIÓN SIEMPRE REQUERIDA
+            if(!confirm(`¿ESTÁS SEGURO? Vas a bloquear la agenda de ${barber} para el día ${fecha} (${tipoFinal}).`)) return;
 
             const payload = { action: 'saveClosure', barbero: barber, fecha: fecha, tipo: tipoFinal };
             
             document.getElementById('loading').classList.remove('hidden');
             try {
                 await fetch(urlScript, { method: 'POST', body: JSON.stringify(payload) });
-                await cargarAgenda(); // Refresca y confirma que el front y back coinciden
+                await cargarAgenda(); // Refresco inmediato del front
             } catch (e) { alert("Error al guardar"); }
         }
 
         function renderizarEquipo() {
             document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
-                const esOscar = b[0].toLowerCase().includes("oscar") || b[0].toLowerCase().includes("óscar");
+                const esOscar = b[0].toLowerCase().includes("oscar");
                 return `
                 <div class="p-4 bg-white border border-black flex justify-between items-center fade-in">
                     <span class="font-800 uppercase text-xs italic">${b[0]}</span>
@@ -278,8 +281,7 @@
 
         async function nuevoBarbero() {
             const n = document.getElementById('new-barber-name').value;
-            if(!n) return alert("Nombre vacío");
-            if(!confirm(`¿Añadir a ${n} al equipo? Aparecerá en el formulario de citas.`)) return;
+            if(!n || !confirm(`¿Añadir a ${n} al equipo?`)) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveBarber', nombre: n }) });
             document.getElementById('new-barber-name').value = '';
@@ -287,21 +289,21 @@
         }
 
         async function borrarBarbero(nombre) {
-            if(!confirm(`¿ELIMINAR A ${nombre}? Esta acción es irreversible y afectará a la visibilidad en el front.`)) return;
+            if(!confirm(`¿ELIMINAR A ${nombre}?`)) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre }) });
             cargarAgenda();
         }
 
         async function cancelarCita(id) { 
-            if(!confirm("¿Seguro que quieres anular esta cita? El cliente no podrá recuperarla.")) return; 
+            if(!confirm("¿Anular cita?")) return; 
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) }); 
             cargarAgenda(); 
         }
 
         async function borrarCierre(fecha, barbero, tipo) {
-            if(!confirm(`¿Reabrir el horario de ${barbero} para el día ${fecha}?`)) return;
+            if(!confirm(`¿Reabrir horario?`)) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha, barbero, tipo }) });
             cargarAgenda();
