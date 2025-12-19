@@ -9,12 +9,12 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
-        /* Notas: Pestaña activa corregida para visibilidad total */
         .tab-active { background: #000 !important; color: #fff !important; font-weight: 800; border-color: #000; }
         input, select, textarea { border-bottom: 1px solid black !important; outline: none; }
         .modal-overlay { background: rgba(0,0,0,0.8); z-index: 50; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="p-2 md:p-10">
@@ -50,8 +50,8 @@
             <div class="space-y-6">
                 <div>
                     <p id="ficha-nombre" class="text-lg font-bold uppercase mb-4 border-b border-gray-100 pb-2"></p>
-                    <label class="text-[10px] uppercase font-bold text-gray-400 block mb-2">Notas Técnicas (Corte, productos, etc.)</label>
-                    <textarea id="ficha-notas" rows="5" class="w-full p-3 bg-gray-50 border-none text-sm" placeholder="Ej: Degradado al 0.5, tijera arriba..."></textarea>
+                    <label class="text-[10px] uppercase font-bold text-gray-400 block mb-2">Notas Técnicas</label>
+                    <textarea id="ficha-notas" rows="5" class="w-full p-3 bg-gray-50 border-none text-sm"></textarea>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="cerrarFicha()" class="flex-1 py-3 text-[10px] uppercase font-bold border border-black">Cerrar</button>
@@ -75,58 +75,98 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 font-800">
-            <div class="card-admin p-4 text-center">
+        <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 font-800 text-center">
+            <div class="card-admin p-4">
                 <p id="total-citas" class="text-2xl md:text-4xl italic">0</p>
                 <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Citas Hoy</p>
             </div>
-            <div class="card-admin p-4 text-center bg-black text-white shadow-lg">
+            <div class="card-admin p-4 bg-black text-white shadow-lg">
                 <p id="ingresos-hoy" class="text-2xl md:text-4xl italic">0€</p>
                 <p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja Hoy</p>
             </div>
-            <div class="card-admin p-4 text-center border-dashed">
+            <div class="card-admin p-4 border-dashed">
                 <p id="proxima-cita" class="text-2xl md:text-4xl italic underline">--</p>
                 <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Siguiente</p>
             </div>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-4 mb-6 px-2">
-            <div class="flex gap-1">
+            <div class="flex gap-1 overflow-x-auto no-scrollbar">
                 <button id="tab-hoy" onclick="cambiarFiltro('hoy')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest tab-active">Hoy</button>
-                <button id="tab-futuro" onclick="cambiarFiltro('futuro')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all">Próximos</button>
-                <button id="tab-pasado" onclick="cambiarFiltro('pasado')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all">Pasados</button>
+                <button id="tab-futuro" onclick="cambiarFiltro('futuro')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all hover:bg-gray-50">Próximos</button>
+                <button id="tab-pasado" onclick="cambiarFiltro('pasado')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all hover:bg-gray-50">Pasados</button>
+                <button id="tab-calendario" onclick="cambiarFiltro('calendario')" class="border border-black px-6 py-2.5 text-[9px] font-bold uppercase tracking-widest transition-all bg-gray-50 italic">📅 Calendario / Equipo</button>
             </div>
-            
             <div id="rango-pasados" class="hidden flex gap-2 items-center text-[10px] font-bold uppercase bg-gray-100 p-2 rounded-sm shadow-inner">
                 <input type="date" id="fecha-desde" class="bg-transparent border-none">
                 <span class="text-gray-400">al</span>
                 <input type="date" id="fecha-hasta" class="bg-transparent border-none">
-                <button onclick="renderizarUI()" class="bg-black text-white px-4 py-1.5 ml-2 hover:opacity-80 transition-all">Filtrar</button>
+                <button onclick="renderizarUI()" class="bg-black text-white px-4 py-1.5 ml-2">Filtrar</button>
             </div>
         </div>
 
-        <div class="bg-white border-y md:border border-black overflow-hidden shadow-sm mb-16">
+        <div id="contenedor-principal" class="bg-white border-y md:border border-black overflow-hidden shadow-sm mb-16 min-h-[300px]">
             <div id="loading" class="p-20 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Sincronizando con Google...</div>
+            
             <table class="w-full text-left table-fixed md:table-auto" id="tabla-main" style="display:none">
                 <thead>
                     <tr class="bg-gray-50 text-[8px] uppercase tracking-widest border-b border-black font-bold text-gray-500">
                         <th class="p-4 w-16 md:w-24">Hora</th>
-                        <th class="p-4">Cliente / Fecha</th>
+                        <th class="p-4">Cliente / Barbero</th>
                         <th class="p-4 hidden md:table-cell">Servicio</th>
                         <th class="p-4 text-right w-32 md:w-56">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
             </table>
+
+            <div id="vista-calendario" class="hidden p-6 md:p-10 fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="card-admin p-6 border-2 border-dashed">
+                        <h4 class="text-sm font-800 uppercase mb-6 border-b-2 border-black pb-2">Equipo 502</h4>
+                        <div class="space-y-4 mb-8">
+                            <div class="flex gap-2">
+                                <input type="text" id="new-barber-name" placeholder="Nombre nuevo barbero" class="flex-1 py-2 text-sm bg-transparent">
+                                <button onclick="nuevoBarbero()" class="bg-black text-white px-4 py-2 text-[9px] font-bold uppercase">Añadir</button>
+                            </div>
+                        </div>
+                        <div id="lista-barberos" class="space-y-2">
+                            </div>
+                    </div>
+
+                    <div class="card-admin p-6 border-2">
+                        <h4 class="text-sm font-800 uppercase mb-6 border-b-2 border-black pb-2">Marcar Cierre</h4>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label>
+                                <select id="cierre-barbero" class="w-full py-2 font-bold italic border-b border-black"></select>
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día del cierre</label>
+                                <input type="date" id="cierre-fecha" class="w-full py-2">
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="guardarBloqueo('Mañana')" class="border border-black py-2 text-[8px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana</button>
+                                <button onclick="guardarBloqueo('Tarde')" class="border border-black py-2 text-[8px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde</button>
+                                <button onclick="guardarBloqueo('Día Completo')" class="border border-black py-2 text-[8px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el día</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12">
+                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400">Bloqueos de agenda próximos</h4>
+                    <div id="lista-cierres" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-[10px]"></div>
+                </div>
+            </div>
         </div>
 
         <div class="border-t-4 border-black pt-12 mb-20 bg-white p-6 shadow-sm border">
-            <h2 class="text-2xl font-800 uppercase tracking-tighter mb-10 px-2 italic underline decoration-2 underline-offset-4">Reporte de Negocio</h2>
+            <h2 class="text-2xl font-800 uppercase tracking-tighter mb-10 italic underline decoration-2 underline-offset-4">Reporte de Negocio</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="border-l-2 border-black pl-6">
                     <p id="label-mes-anterior" class="text-[9px] uppercase font-800 text-gray-400 mb-2 tracking-widest">Caja (Mes anterior)</p>
                     <p id="caja-mes-anterior" class="text-5xl font-800 italic tracking-tighter">0€</p>
-                    <p id="conteo-mes-anterior" class="text-[10px] mt-3 font-bold text-gray-600 uppercase tracking-tight">-- reservas totales</p>
+                    <p id="conteo-mes-anterior" class="text-[10px] mt-3 font-bold text-gray-600 uppercase tracking-tight">-- servicios totales</p>
                 </div>
                 <div class="border-l-2 border-black pl-6">
                     <p class="text-[9px] uppercase font-800 text-gray-400 mb-4 tracking-widest">Clientes más fieles</p>
@@ -142,17 +182,14 @@
 
     <script>
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
-        let todasLasCitas = [];
-        let todosLosClientes = []; // Caché local para inmediatez
+        let todasLasCitas = [], todosLosClientes = [], todosLosBarberos = [], todosLosCierres = [];
         let filtroVista = 'hoy';
         let citaEditandoId = null;
         const precios = { "Corte y lavado": 13, "Corte + barba": 17, "Arreglo barba": 7 };
 
-        function formatearFechaElegante(fechaStr) {
-            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-            const partes = fechaStr.split("-");
-            if(partes.length < 3) return fechaStr;
-            return parseInt(partes[2]) + " de " + meses[parseInt(partes[1]) - 1] + " de " + partes[0];
+        function formatearFechaElegante(f) {
+            const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+            const p = f.split("-"); return p.length < 3 ? f : `${parseInt(p[2])} de ${meses[parseInt(p[1])-1]} de ${p[0]}`;
         }
 
         window.onload = () => {
@@ -161,191 +198,181 @@
                 const hoy = new Date().toISOString().split('T')[0];
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
+                document.getElementById('cierre-fecha').value = hoy;
                 cargarAgenda();
-            } else document.body.innerHTML = "Denegado";
+            } else document.body.innerHTML = "Acceso denegado";
         };
 
         async function cargarAgenda() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('tabla-main').style.display = 'none';
+            document.getElementById('vista-calendario').style.display = 'none';
             try {
-                // Ahora el back-end debe devolver un objeto con { citas: [], clientes: [] }
                 const res = await fetch(`${urlScript}?action=getAppointments`);
                 const data = await res.json();
-                
-                todasLasCitas = data.citas;
-                todosLosClientes = data.clientes; // Guardamos los perfiles en caché
+                todasLasCitas = data.citas || [];
+                todosLosClientes = data.clientes || [];
+                todosLosBarberos = data.barberos || [];
+                todosLosCierres = data.cierres || [];
                 
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('tabla-main').style.display = 'table';
-                calcularEstadisticas();
                 renderizarUI();
-            } catch (e) { alert("Error al conectar con Google Sheets"); }
+                renderizarCalendarioEquipo();
+            } catch (e) { alert("Error al conectar con el servidor."); }
         }
 
         function cambiarFiltro(f) {
             filtroVista = f;
-            document.querySelectorAll('[id^="tab-"]').forEach(btn => btn.classList.remove('tab-active'));
+            document.querySelectorAll('[id^="tab-"]').forEach(b => b.classList.remove('tab-active'));
             document.getElementById('tab-' + f).classList.add('tab-active');
             document.getElementById('rango-pasados').classList.toggle('hidden', f !== 'pasado');
-            renderizarUI();
+            
+            const esCal = f === 'calendario';
+            document.getElementById('tabla-main').style.display = esCal ? 'none' : 'table';
+            document.getElementById('vista-calendario').style.display = esCal ? 'block' : 'none';
+            if(!esCal) renderizarUI();
         }
 
         function renderizarUI() {
             const now = new Date();
             const hoyStr = now.toISOString().split('T')[0];
-            const cuerpo = document.getElementById('lista-citas');
-            
-            const citasHoyValidas = todasLasCitas.filter(c => c[5] === hoyStr && !c[1].startsWith("CANCELADA"));
-            let cajaHoy = 0;
-            citasHoyValidas.forEach(c => cajaHoy += (precios[c[4]] || 0));
-            document.getElementById('total-citas').innerText = citasHoyValidas.length;
+            const validas = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
+
+            // Métricas
+            const hoyV = validas.filter(c => c[5] === hoyStr);
+            let cajaHoy = 0; hoyV.forEach(c => cajaHoy += (precios[c[4]] || 0));
+            document.getElementById('total-citas').innerText = hoyV.length;
             document.getElementById('ingresos-hoy').innerText = cajaHoy + "€";
-            
-            const horaActual = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-            const prox = citasHoyValidas.filter(c => c[6] > horaActual).sort((a,b) => a[6] > b[6] ? 1 : -1);
+            const hA = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+            const prox = hoyV.filter(c => c[6] > hA).sort((a,b) => a[6] > b[6] ? 1 : -1);
             document.getElementById('proxima-cita').innerText = prox.length > 0 ? prox[0][6] : "--";
 
-            let filtered = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
-
-            if(filtroVista === 'hoy') filtered = filtered.filter(c => c[5] === hoyStr);
-            else if(filtroVista === 'futuro') filtered = filtered.filter(c => c[5] > hoyStr);
+            const cuerpo = document.getElementById('lista-citas');
+            let filtered = validas;
+            if(filtroVista === 'hoy') filtered = validas.filter(c => c[5] === hoyStr);
+            else if(filtroVista === 'futuro') filtered = validas.filter(c => c[5] > hoyStr);
             else if(filtroVista === 'pasado') {
-                const d = document.getElementById('fecha-desde').value;
-                const h = document.getElementById('fecha-hasta').value;
-                filtered = filtered.filter(c => c[5] >= d && c[5] <= h);
+                const d = document.getElementById('fecha-desde').value, h = document.getElementById('fecha-hasta').value;
+                filtered = validas.filter(c => c[5] >= d && c[5] <= h);
             }
-
             const multi = (filtroVista === 'pasado') ? -1 : 1;
             filtered.sort((a,b) => (a[5]+a[6] > b[5]+b[6]) ? multi : -multi);
 
-            cuerpo.innerHTML = filtered.map(cita => `
+            cuerpo.innerHTML = filtered.map(c => `
                 <tr class="hover:bg-gray-50 transition-all">
-                    <td class="p-4 font-800 text-xl md:text-2xl italic tracking-tighter">${cita[6]}</td>
+                    <td class="p-4 font-800 text-xl md:text-2xl italic">${c[6]}</td>
                     <td class="p-4">
-                        <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${cita[3]}', '${cita[1]}')">
-                            <span class="text-[12px] font-800 uppercase group-hover:underline text-black">${cita[1]}</span>
-                            <span class="text-[12px] font-800 uppercase mt-0.5 text-black">${formatearFechaElegante(cita[5])}</span>
+                        <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${c[3]}', '${c[1]}')">
+                            <span class="text-[12px] font-800 uppercase group-hover:underline text-black">${c[1]}</span>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">${formatearFechaElegante(c[5])} · ${c[8] || 'Óscar'}</span>
                         </div>
                     </td>
-                    <td class="p-4 hidden md:table-cell"><span class="text-[9px] bg-gray-100 px-2 py-1 font-800 italic uppercase text-gray-500">${cita[4]}</span></td>
+                    <td class="p-4 hidden md:table-cell"><span class="text-[9px] bg-gray-100 px-2 py-1 font-800 italic uppercase text-gray-500">${c[4]}</span></td>
                     <td class="p-4 text-right">
                         <div class="flex justify-end gap-1.5">
-                            <a href="https://wa.me/${cita[2].replace(/\D/g,'')}" target="_blank" class="border border-black p-2 hover:bg-black hover:text-white transition-all flex items-center shadow-sm">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.394 0 12.03a11.782 11.782 0 001.579 5.825L0 24l6.335-1.652a11.79 11.79 0 005.71 1.448h.005c6.637 0 12.032-5.395 12.034-12.03a11.75 11.75 0 00-3.489-8.502z"/></svg>
-                            </a>
-                            <button onclick="abrirEditor('${cita[7]}', '${cita[5]}', '${cita[6]}')" class="border border-black p-2 hover:bg-black hover:text-white transition-all shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                            <button onclick="cancelarCita('${cita[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white transition-all shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                            <a href="https://wa.me/${c[2].replace(/\D/g,'')}" target="_blank" class="border border-black p-2 hover:bg-black hover:text-white rounded-sm"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .018 5.394 0 12.03a11.782 11.782 0 001.579 5.825L0 24l6.335-1.652a11.79 11.79 0 005.71 1.448h.005c6.637 0 12.032-5.395 12.034-12.03a11.75 11.75 0 00-3.489-8.502z"/></svg></a>
+                            <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}')" class="border border-black p-2 hover:bg-black hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                            <button onclick="cancelarCita('${c[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                         </div>
                     </td>
                 </tr>`).join('');
+            calcularEstadisticas();
         }
 
-        function calcularEstadisticas() {
-            const now = new Date();
-            const mesActual = now.getMonth();
-            const añoActual = now.getFullYear();
+        // --- GESTIÓN EQUIPO Y CALENDARIO (ÓSCAR YA DEFINIDO) ---
+        function renderizarCalendarioEquipo() {
+            // Llenar selectores y lista con los barberos de la BBDD
+            const selector = document.getElementById('cierre-barbero');
+            const lista = document.getElementById('lista-barberos');
             
-            let mesB = mesActual - 1; let añoB = añoActual;
-            if(mesB < 0) { mesB = 11; añoB--; }
-            
-            const nombresM = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            document.getElementById('label-mes-anterior').innerText = `Caja (${nombresM[mesB]})`;
-
-            const validas = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
-
-            const mesP = validas.filter(c => {
-                const f = new Date(c[5]);
-                return f.getMonth() === mesB && f.getFullYear() === añoB;
-            });
-
-            let total = 0; mesP.forEach(c => total += (precios[c[4]] || 0));
-            document.getElementById('caja-mes-anterior').innerText = total + "€";
-            document.getElementById('conteo-mes-anterior').innerText = `${mesP.length} SERVICIOS REALIZADOS`;
-
-            // Ranking Fidelidad (Clickable y sin cortes)
-            const countClie = {};
-            validas.forEach(c => {
-                const key = c[1];
-                if(!countClie[key]) countClie[key] = { count: 0, email: c[3] };
-                countClie[key].count++;
-            });
-            const top3 = Object.entries(countClie).sort((a,b) => b[1].count - a[1].count).slice(0, 3);
-            
-            document.getElementById('top-clientes').innerHTML = top3.map(([nom, d]) => `
-                <div class="flex justify-between items-center group cursor-pointer border-b border-gray-50 pb-1" onclick="abrirFichaCliente('${d.email}', '${nom}')">
-                    <span class="text-[12px] font-bold uppercase group-hover:underline truncate pr-2">${nom}</span>
-                    <span class="text-[10px] bg-black text-white px-2 rounded-full font-800">${d.count}</span>
+            selector.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
+            lista.innerHTML = todosLosBarberos.map(b => `
+                <div class="p-3 bg-gray-50 flex justify-between font-bold uppercase text-[11px] border border-gray-100">
+                    <span>${b[0]}</span>
+                    <span class="text-green-600">● ${b[2]}</span>
                 </div>`).join('');
 
-            const statsS = {};
-            validas.forEach(c => statsS[c[4]] = (statsS[c[4]] || 0) + 1);
-            document.getElementById('stats-servicios').innerHTML = Object.entries(statsS).sort((a,b) => b[1] - a[1]).map(([serv, n]) => `
-                <div class="flex justify-between text-[11px] font-bold uppercase"><span>${serv}</span><span class="text-gray-400 italic">${n}</span></div>`).join('');
+            // Listar cierres activos
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('lista-cierres').innerHTML = todosLosCierres.filter(c => c[0] >= hoy).map(c => `
+                <div class="p-3 border border-black bg-white flex justify-between items-center fade-in">
+                    <div class="uppercase font-bold"><b>${c[1]}</b><br>${formatearFechaElegante(c[0])}<br><span class="italic text-gray-500 text-[8px]">${c[4]}</span></div>
+                    <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500">✕</button>
+                </div>`).join('');
         }
 
-        // --- INMEDIATEZ: Abrir ficha es ahora instantáneo (Cache local) ---
-        function abrirFichaCliente(email, nombre) {
-            if(!email || email === "N/A") return alert("El perfil de " + nombre + " no tiene email vinculado.");
-            
-            // Buscamos los datos en la memoria que ya descargamos
-            const infoLocal = todosLosClientes.find(c => c[1].toLowerCase() === email.toLowerCase());
-            const notas = infoLocal ? infoLocal[3] : "Sin notas técnicas registradas.";
+        async function nuevoBarbero() {
+            const nombre = document.getElementById('new-barber-name').value;
+            if(!nombre) return alert("Escribe un nombre");
+            document.getElementById('loading').style.display = 'block';
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveBarber', nombre }) });
+            cargarAgenda();
+        }
 
-            document.getElementById('ficha-nombre').innerText = nombre;
-            document.getElementById('ficha-email').innerText = email;
-            document.getElementById('ficha-notas').value = notas;
+        async function guardarBloqueo(tipo) {
+            const data = { action: 'saveClosure', barbero: document.getElementById('cierre-barbero').value, fecha: document.getElementById('cierre-fecha').value, tipo: tipo };
+            if(!data.fecha) return alert("Selecciona fecha");
+            document.getElementById('loading').style.display = 'block';
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify(data) });
+            cargarAgenda();
+        }
+
+        async function borrarCierre(fecha, barbero, tipo) {
+            if(!confirm("¿Reabrir este horario?")) return;
+            document.getElementById('loading').style.display = 'block';
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha, barbero, tipo }) });
+            cargarAgenda();
+        }
+
+        // --- ESTADÍSTICAS Y FICHAS ---
+        function calcularEstadisticas() {
+            const now = new Date(); let mB = now.getMonth()-1, aB = now.getFullYear(); if(mB<0){mB=11;aB--;}
+            const nombresM = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            document.getElementById('label-mes-anterior').innerText = `Caja (${nombresM[mB]})`;
+            const validas = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
+            const mesP = validas.filter(c => { const f = new Date(c[5]); return f.getMonth() === mB && f.getFullYear() === aB; });
+            let t = 0; mesP.forEach(c => t += (precios[c[4]] || 0));
+            document.getElementById('caja-mes-anterior').innerText = t + "€";
+            document.getElementById('conteo-mes-anterior').innerText = `${mesP.length} SERVICIOS TOTALES`;
+
+            const rank = {}; validas.forEach(c => { if(!rank[c[1]]) rank[c[1]] = {n:0,e:c[3]}; rank[c[1]].n++; });
+            const top3 = Object.entries(rank).sort((a,b) => b[1].n - a[1].n).slice(0,3);
+            document.getElementById('top-clientes').innerHTML = top3.map(([n,d]) => `
+                <div class="flex justify-between items-center group cursor-pointer border-b pb-1" onclick="abrirFichaCliente('${d.e}','${n}')">
+                    <span class="text-[12px] font-bold uppercase group-hover:underline truncate pr-2">${n}</span>
+                    <span class="text-[10px] bg-black text-white px-2 rounded-full">${d.n}</span>
+                </div>`).join('');
+
+            const statsS = {}; validas.forEach(c => statsS[c[4]] = (statsS[c[4]] || 0) + 1);
+            document.getElementById('stats-servicios').innerHTML = Object.entries(statsS).sort((a,b) => b[1]-a[1]).map(([s,n]) => `
+                <div class="flex justify-between text-[11px] font-bold uppercase"><span>${s}</span><span class="text-gray-400 italic">${n}</span></div>`).join('');
+        }
+
+        function abrirFichaCliente(e, n) {
+            if(!e || e === "N/A") return alert("Sin email.");
+            const info = todosLosClientes.find(c => c[1].toLowerCase() === e.toLowerCase());
+            document.getElementById('ficha-nombre').innerText = n;
+            document.getElementById('ficha-email').innerText = e;
+            document.getElementById('ficha-notas').value = info ? info[3] : "Sin notas técnicas registradas.";
             document.getElementById('modal-ficha').classList.remove('hidden');
         }
 
         async function guardarNotas() {
-            const email = document.getElementById('ficha-email').innerText;
-            const notas = document.getElementById('ficha-notas').value;
-            
-            // Actualización local para que sea inmediato
-            const index = todosLosClientes.findIndex(c => c[1].toLowerCase() === email.toLowerCase());
-            if(index !== -1) todosLosClientes[index][3] = notas;
-            
-            // Envío al back-end
+            const email = document.getElementById('ficha-email').innerText, notas = document.getElementById('ficha-notas').value;
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClientNotes', email, notas }) });
-            alert("Ficha de " + document.getElementById('ficha-nombre').innerText + " guardada.");
-            cerrarFicha();
+            alert("Notas técnicas actualizadas."); cerrarFicha(); cargarAgenda();
         }
 
         function cerrarFicha() { document.getElementById('modal-ficha').classList.add('hidden'); }
-
-        async function abrirEditor(id, fecha, hora) {
-            citaEditandoId = id; document.getElementById('edit-fecha').value = fecha;
-            document.getElementById('modal-editor').classList.remove('hidden');
-            await cargarHorasEditor(fecha, hora);
-            document.getElementById('edit-fecha').onchange = (e) => cargarHorasEditor(e.target.value, "");
-        }
-
+        async function abrirEditor(id, f, h) { citaEditandoId = id; document.getElementById('edit-fecha').value = f; document.getElementById('modal-editor').classList.remove('hidden'); await cargarHorasEditor(f, h); }
         async function cargarHorasEditor(f, h) {
-            const select = document.getElementById('edit-hora');
-            const res = await fetch(`${urlScript}?fecha=${f}`);
-            const ocupadas = await res.json();
-            const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-            select.innerHTML = horarios.map(x => `<option value="${x}" ${ocupadas.includes(x) && x!==h ? 'disabled':''} ${x===h ? 'selected':''}>${x}</option>`).join('');
+            const res = await fetch(`${urlScript}?fecha=${f}`); const ocupadas = await res.json();
+            const horas = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
+            document.getElementById('edit-hora').innerHTML = horas.map(x => `<option value="${x}" ${ocupadas.includes(x) && x!==h ? 'disabled':''} ${x===h ? 'selected':''}>${x}</option>`).join('');
         }
-
         function cerrarEditor() { document.getElementById('modal-editor').classList.add('hidden'); }
-
-        async function guardarCambios() {
-            const nuevaFecha = document.getElementById('edit-fecha').value;
-            const nuevaHora = document.getElementById('edit-hora').value;
-            document.getElementById('loading').style.display = 'block';
-            cerrarEditor();
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'update', eventId: citaEditandoId, nuevaFecha, nuevaHora }) });
-            cargarAgenda();
-        }
-
-        async function cancelarCita(id) {
-            if(!confirm("¿Anular cita permanentemente?")) return;
-            document.getElementById('loading').style.display = 'block';
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
-            cargarAgenda();
-        }
+        async function guardarCambios() { const f = document.getElementById('edit-fecha').value, h = document.getElementById('edit-hora').value; await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'update', eventId: citaEditandoId, nuevaFecha: f, nuevaHora: h }) }); cerrarEditor(); cargarAgenda(); }
+        async function cancelarCita(id) { if(!confirm("¿Anular cita?")) return; await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) }); cargarAgenda(); }
     </script>
 </body>
 </html>
