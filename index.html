@@ -14,7 +14,6 @@
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
-        /* Efecto de carga suave para el select de horas */
         .loading-select { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
@@ -83,7 +82,6 @@
                     <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
                     <h2 class="text-3xl font-800 uppercase tracking-tighter">Confirmada</h2>
                 </div>
-                
                 <div class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4">
                     <p>Estimado cliente,</p>
                     <p>Le confirmamos que su reserva ha sido registrada correctamente:</p>
@@ -95,14 +93,12 @@
                     </ul>
                     <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="text-black font-bold underline block mt-2">📍 Ver en Google Maps</a>
                 </div>
-                
                 <div class="w-full space-y-3">
                     <a id="link-gcal" target="_blank" class="block w-full border-2 border-black bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center">Añadir a Google Calendar</a>
                     <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-gray-50">Modificar o Cancelar</a>
                     <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4 text-center">Nueva reserva</button>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -113,7 +109,6 @@
         const selectHora = document.getElementById('hora');
         const hoy = new Date().toISOString().split('T')[0];
         
-        // --- CACHÉ DE HORARIOS PARA SINCRONIZACIÓN INMEDIATA ---
         const horariosCache = {};
 
         function formatearFechaElegante(fechaStr) {
@@ -129,7 +124,17 @@
         };
 
         async function cargarHorarios(fechaSel) {
-            // Si ya tenemos la fecha en caché, la cargamos al instante
+            const dateObj = new Date(fechaSel);
+            const diaSemana = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
+
+            // 1. Bloqueo inmediato de domingos (Sin esperar al servidor)
+            if (diaSemana === 0) {
+                selectHora.innerHTML = '<option value="" disabled selected>Cerrado</option>';
+                alert("Los domingos la barbería permanece cerrada. Por favor, elige otro día.");
+                return;
+            }
+
+            // 2. Uso de Caché para inmediatez
             if (horariosCache[fechaSel]) {
                 renderizarOpcionesHora(horariosCache[fechaSel], fechaSel);
                 return;
@@ -141,20 +146,27 @@
             try {
                 const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
                 const ocupadas = await res.json();
-                
-                // Guardamos en caché
                 horariosCache[fechaSel] = ocupadas;
-                
                 renderizarOpcionesHora(ocupadas, fechaSel);
             } catch (e) { 
-                selectHora.innerHTML = '<option value="">Error al cargar</option>'; 
+                selectHora.innerHTML = '<option value="">Error</option>'; 
             } finally {
                 selectHora.classList.remove('loading-select');
             }
         }
 
         function renderizarOpcionesHora(ocupadas, fechaSel) {
-            const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
+            const dateObj = new Date(fechaSel);
+            const diaSemana = dateObj.getDay();
+
+            // Configuración de horarios según el día
+            let horarios = [];
+            if (diaSemana === 6) { // SÁBADO: 10:00 a 14:00
+                horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
+            } else { // LUNES A VIERNES: 10:00 a 20:30 (Última cita 20:00)
+                horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+            }
+
             const ahora = new Date();
             const esHoy = fechaSel === hoy;
             const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
@@ -183,58 +195,23 @@
                 email: document.getElementById('email').value.trim()
             };
 
-            // VALIDACIONES ESTRICTAS
-            if (!d.nombre) return alert("Por favor, introduce tu nombre completo.");
+            if (!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los campos.");
             
-            const phoneRegex = /^(\+\d+)?\d{9}$/;
-            if (!phoneRegex.test(d.telefono)) return alert("Por favor, introduce un teléfono válido (9 dígitos).");
-            
-            if (!d.servicio) return alert("Por favor, selecciona un servicio.");
-            
-            if (!d.fecha) return alert("Por favor, selecciona una fecha.");
-            
-            if (!d.hora || d.hora === "" || d.hora === "Cargando...") {
-                return alert("Por favor, selecciona una hora válida.");
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(d.email)) return alert("Por favor, introduce un correo electrónico válido para tu justificante.");
-
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
             
             try {
-                // El modo 'no-cors' se usa para evitar bloqueos del navegador al redirigir el POST
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-                
                 const fechaBonita = formatearFechaElegante(d.fecha);
-                
                 document.getElementById('res-servicio').innerText = d.servicio;
                 document.getElementById('res-fecha').innerText = fechaBonita;
                 document.getElementById('res-hora').innerText = d.hora;
-
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                
                 const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${fechaBonita} a las ${d.hora}.`);
                 document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${mensajeWa}`;
-
-                const dateParts = d.fecha.replace(/-/g, '');
-                const timeParts = d.hora.replace(':', '');
-                const start = `${dateParts}T${timeParts}00`;
-                let endHour = parseInt(timeParts.substring(0,2));
-                let endMin = parseInt(timeParts.substring(2,4)) + 30;
-                if(endMin >= 60) { endMin = "00"; endHour += 1; }
-                const end = `${dateParts}T${endHour.toString().padStart(2,'0')}${endMin.toString().padStart(2,'0')}00`;
-                
-                const gLocation = encodeURIComponent("502 Barber Studio, Calle Mármoles 41, 29007 Málaga");
-                const gTitle = encodeURIComponent("Mi Cita en 502 Barber Studio");
-
-                document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gTitle}&dates=${start}/${end}&location=${gLocation}`;
-                
             } catch (e) { 
-                alert("Hubo un error al conectar con el servidor."); 
-                btn.disabled = false; 
-                btn.innerText = "Confirmar Reserva";
+                alert("Error al conectar."); 
+                btn.disabled = false; btn.innerText = "Confirmar Reserva";
             }
         }
     </script>
