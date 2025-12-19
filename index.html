@@ -16,7 +16,6 @@
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Estilos personalizados para el nuevo selector */
         .date-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
         .date-card.active { background: black; color: white; border-color: black; transform: scale(1.05); }
         .time-chip { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
@@ -63,7 +62,7 @@
                 </div>
 
                 <div class="space-y-3">
-                    <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400" id="display-mes">Diciembre 2025</p>
+                    <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400" id="display-mes"></p>
                     <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
                         </div>
                 </div>
@@ -82,7 +81,7 @@
                         <option value="Corte + barba">Corte + barba — 17€</option>
                         <option value="Arreglo barba">Arreglo barba — 7€</option>
                     </select>
-                    <input type="email" id="email" placeholder="Email para justificante" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
+                    <input type="email" id="email" placeholder="Email para confirmar la reserva" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
                 </div>
 
                 <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl">Confirmar Reserva</button>
@@ -115,7 +114,6 @@
         let horariosOcupados = [];
         const cacheHorarios = {};
 
-        // Inicialización
         window.onload = () => {
             renderizarCalendario();
             cargarHorarios(fechaGlobal);
@@ -133,8 +131,8 @@
             for(let i=0; i<14; i++) {
                 const f = new Date();
                 f.setDate(hoy.getDate() + i);
-                if(f.getDay() === 0) continue; // Saltar domingos
-
+                
+                // Eliminamos 'if(f.getDay() === 0) continue;' para incluir domingos
                 const iso = f.toISOString().split('T')[0];
                 const card = document.createElement('div');
                 card.className = `date-card flex-shrink-0 w-14 py-4 rounded-xl flex flex-col items-center justify-center cursor-pointer ${iso === fechaGlobal ? 'active' : ''}`;
@@ -151,6 +149,14 @@
 
         async function cargarHorarios(fechaSel) {
             const grid = document.getElementById('time-grid');
+            const dObj = new Date(fechaSel);
+            
+            // Caso Domingo: Cerrado todo el día
+            if(dObj.getDay() === 0) {
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS DOMINGOS</p>';
+                return;
+            }
+
             grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Cargando horas...</p>';
             
             if(cacheHorarios[fechaSel]) {
@@ -174,19 +180,23 @@
 
         function renderizarHoras() {
             const grid = document.getElementById('time-grid');
-            grid.innerHTML = '';
-            
             const f = new Date(fechaGlobal);
             const esSabado = f.getDay() === 6;
+            const esDomingo = f.getDay() === 0;
 
-            // Definición de bloques
-            const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
-            const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
-
-            if(esSabado && turnoGlobal === 'tarde') {
-                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">Cerrado los sábados tarde</p>';
+            if(esDomingo) {
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS DOMINGOS</p>';
                 return;
             }
+
+            if(esSabado && turnoGlobal === 'tarde') {
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS SÁBADOS TARDE</p>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
+            const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
 
             const rango = turnoGlobal === 'mañana' ? mañana : tarde;
             const ahora = new Date();
@@ -213,6 +223,12 @@
             });
         }
 
+        function formatearFechaElegante(fechaStr) {
+            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            const partes = fechaStr.split("-");
+            return parseInt(partes[2]) + " de " + meses[parseInt(partes[1]) - 1] + " de " + partes[0];
+        }
+
         async function confirmarCita() {
             const btn = document.getElementById('btn-reserva');
             const d = {
@@ -230,17 +246,14 @@
             
             try {
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-                
+                const fBonita = formatearFechaElegante(d.fecha);
                 document.getElementById('res-servicio').innerText = d.servicio;
-                document.getElementById('res-fecha').innerText = d.fecha;
+                document.getElementById('res-fecha').innerText = fBonita;
                 document.getElementById('res-hora').innerText = d.hora;
-
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                
-                const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${d.fecha} a las ${d.hora}.`);
+                const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${fBonita} a las ${d.hora}.`);
                 document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${mensajeWa}`;
-
             } catch (e) { 
                 alert("Error de conexión."); 
                 btn.disabled = false; btn.innerText = "Confirmar Reserva";
