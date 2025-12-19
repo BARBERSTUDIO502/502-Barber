@@ -12,8 +12,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Cursor de agarre para PC */
-        .scroll-container { cursor: grab; user-select: none; }
+        /* Arrastre en PC */
+        .scroll-container { cursor: grab; user-select: none; overflow-x: auto; display: flex; gap: 12px; }
         .scroll-container:active { cursor: grabbing; }
 
         input { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
@@ -21,11 +21,11 @@
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .date-card, .barber-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; cursor: pointer; }
+        .date-card, .barber-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; cursor: pointer; flex-shrink: 0; }
         .date-card.active, .barber-card.active { background: black; color: white; border-color: black; transform: scale(1.05); }
         .time-chip { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
         .time-chip.active { background: black; color: white; border-color: black; }
-        .time-chip:disabled { opacity: 0.15; cursor: not-allowed; text-decoration: line-through; }
+        .time-chip:disabled { opacity: 0.15 !important; cursor: not-allowed !important; text-decoration: line-through; background: #f3f4f6; }
         .tab-btn.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 800; }
     </style>
 </head>
@@ -58,12 +58,12 @@
 
                 <div id="section-barbero" class="hidden space-y-3">
                     <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400">Elegir Barbero</p>
-                    <div id="barber-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 scroll-container"></div>
+                    <div id="barber-scroll" class="scroll-container no-scrollbar pb-2"></div>
                 </div>
 
                 <div class="space-y-3">
                     <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400" id="display-mes"></p>
-                    <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 scroll-container"></div>
+                    <div id="date-scroll" class="scroll-container no-scrollbar pb-2"></div>
                 </div>
 
                 <div class="flex p-1 bg-gray-100 rounded-lg">
@@ -79,7 +79,7 @@
                         <option value="Corte + barba">Corte + barba — 17€</option>
                         <option value="Arreglo barba">Arreglo barba — 7€</option>
                     </select>
-                    <input type="email" id="email" placeholder="Email para confirmar la reserva" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
+                    <input type="email" id="email" placeholder="Email de confirmación" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
                 </div>
 
                 <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 shadow-xl">Confirmar Reserva</button>
@@ -87,17 +87,10 @@
 
             <div id="vista-exito" class="hidden flex flex-col text-center">
                 <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
-                <h2 class="text-3xl font-800 uppercase tracking-tighter">Confirmada</h2>
-                <div class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4">
-                    <ul class="space-y-1 font-semibold uppercase text-[11px] tracking-wider text-left">
-                        <li>Barbero: <span id="res-barbero"></span></li>
-                        <li>Servicio: <span id="res-servicio"></span></li>
-                        <li>Día: <span id="res-fecha"></span></li>
-                        <li>Hora: <span id="res-hora"></span></li>
-                    </ul>
-                </div>
-                <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em]">Modificar cita</a>
-                <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Nueva reserva</button>
+                <h2 class="text-3xl font-800 uppercase tracking-tighter">Reserva Lista</h2>
+                <div id="resumen-cita" class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4 uppercase font-bold text-[11px] text-left"></div>
+                <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em]">Modificar por WhatsApp</a>
+                <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Hacer otra reserva</button>
             </div>
         </div>
     </div>
@@ -110,36 +103,28 @@
         let turnoGlobal = 'mañana';
         let horaGlobal = '';
         let horariosOcupados = [];
-        let cierresHoy = []; // Variable para guardar los bloqueos del administrador
-        const cacheHorarios = {};
+        let cierresHoy = [];
 
         window.onload = async () => {
-            initDragToScroll(); // Iniciar funcionalidad para PC
+            setupDragScroll();
             renderizarCalendario();
             await inicializarEquipo();
             cargarHorarios(fechaGlobal);
         };
 
-        // --- FUNCIONALIDAD SCROLL PARA PC (DRAG TO SCROLL) ---
-        function initDragToScroll() {
+        // --- SCROLL PARA PC ---
+        function setupDragScroll() {
             const sliders = document.querySelectorAll('.scroll-container');
             sliders.forEach(slider => {
-                let isDown = false;
-                let startX;
-                let scrollLeft;
-
-                slider.addEventListener('mousedown', (e) => {
-                    isDown = true;
-                    startX = e.pageX - slider.offsetLeft;
-                    scrollLeft = slider.scrollLeft;
-                });
+                let isDown = false; let startX; let scrollLeft;
+                slider.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
                 slider.addEventListener('mouseleave', () => { isDown = false; });
                 slider.addEventListener('mouseup', () => { isDown = false; });
                 slider.addEventListener('mousemove', (e) => {
                     if (!isDown) return;
                     e.preventDefault();
                     const x = e.pageX - slider.offsetLeft;
-                    const walk = (x - startX) * 2; // Velocidad de scroll
+                    const walk = (x - startX) * 2;
                     slider.scrollLeft = scrollLeft - walk;
                 });
             });
@@ -150,13 +135,13 @@
                 const res = await fetch(`${urlScript}?action=getAppointments`);
                 const data = await res.json();
                 const barberos = data.barberos || [];
+                const scroll = document.getElementById('barber-scroll');
 
-                if (barberos.length > 1) {
+                if (barberos.length > 0) {
                     document.getElementById('section-barbero').classList.remove('hidden');
-                    const scroll = document.getElementById('barber-scroll');
                     barberos.forEach((b, i) => {
                         const card = document.createElement('div');
-                        card.className = `barber-card flex-shrink-0 px-6 py-4 rounded-xl flex flex-col items-center ${i === 0 ? 'active' : ''}`;
+                        card.className = `barber-card px-6 py-4 rounded-xl flex flex-col items-center ${i === 0 ? 'active' : ''}`;
                         card.innerHTML = `<span class="text-[10px] font-800 uppercase italic">${b[0]}</span>`;
                         if(i === 0) barberoActual = b[0];
                         card.onclick = () => {
@@ -167,8 +152,6 @@
                         };
                         scroll.appendChild(card);
                     });
-                } else {
-                    barberoActual = barberos.length === 1 ? barberos[0][0] : "Óscar Mejicanos";
                 }
             } catch (e) { barberoActual = "Óscar Mejicanos"; }
         }
@@ -185,7 +168,7 @@
                 const f = new Date(); f.setDate(hoy.getDate() + i);
                 const iso = f.toISOString().split('T')[0];
                 const card = document.createElement('div');
-                card.className = `date-card flex-shrink-0 w-14 py-4 rounded-xl flex flex-col items-center ${iso === fechaGlobal ? 'active' : ''}`;
+                card.className = `date-card w-14 py-4 rounded-xl flex flex-col items-center ${iso === fechaGlobal ? 'active' : ''}`;
                 card.innerHTML = `<span class="text-[9px] uppercase font-bold mb-1">${dias[f.getDay()]}</span><span class="text-lg font-800">${f.getDate()}</span>`;
                 card.onclick = () => {
                     document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
@@ -199,17 +182,17 @@
         async function cargarHorarios(fechaSel) {
             const grid = document.getElementById('time-grid');
             if(new Date(fechaSel).getDay() === 0) {
-                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS DOMINGOS</p>';
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">DOMINGOS CERRADO</p>';
                 return;
             }
-            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Consultando disponibilidad...</p>';
+            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Comprobando agenda...</p>';
             
             try {
-                // Modificado para recibir también los bloqueos (cierres) de la BBDD
+                // Sincronización estricta con Backend
                 const res = await fetch(`${urlScript}?fecha=${fechaSel}&barbero=${encodeURIComponent(barberoActual)}`);
                 const data = await res.json();
                 
-                // Si la BBDD devuelve un objeto con {ocupados: [], cierres: []}
+                // Procesar respuesta (Objeto {ocupados:[], cierres:[]} o solo array)
                 if (data.cierres) {
                     horariosOcupados = data.ocupados || [];
                     cierresHoy = data.cierres || [];
@@ -217,12 +200,8 @@
                     horariosOcupados = data;
                     cierresHoy = [];
                 }
-                
                 renderizarHoras();
-            } catch (e) { 
-                console.error(e); 
-                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase text-red-400">Error al cargar horarios</p>';
-            }
+            } catch (e) { grid.innerHTML = '<p class="text-red-500 text-center col-span-4 text-[10px]">Error al conectar</p>'; }
         }
 
         function setTurno(turno) {
@@ -235,29 +214,27 @@
         function renderizarHoras() {
             const grid = document.getElementById('time-grid');
             const f = new Date(fechaGlobal);
-
-            // 1. RESTRICCIÓN: DIA COMPLETO CERRADO
-            if(cierresHoy.includes("Día Completo")) {
-                grid.innerHTML = '<div class="col-span-4 bg-red-50 p-6 rounded-xl text-center border border-red-100"><p class="text-[11px] font-800 uppercase text-red-800">CERRADO TODO EL DÍA</p></div>';
-                return;
-            }
-
-            // 2. RESTRICCIÓN: SÁBADOS TARDE
-            if(f.getDay() === 6 && turnoGlobal === 'tarde') {
-                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS SÁBADOS TARDE</p>';
-                return;
-            }
-
-            // 3. RESTRICCIÓN: TURNO ESPECÍFICO BLOQUEADO
-            const turnoBloqueado = (turnoGlobal === 'mañana' && cierresHoy.includes("Mañana")) || 
-                                   (turnoGlobal === 'tarde' && cierresHoy.includes("Tarde"));
-            
-            if(turnoBloqueado) {
-                grid.innerHTML = `<div class="col-span-4 bg-gray-50 p-6 rounded-xl text-center"><p class="text-[10px] font-800 uppercase text-gray-400 italic">ESTE TURNO ESTÁ CERRADO</p></div>`;
-                return;
-            }
-
             grid.innerHTML = '';
+
+            // 1. Validar DIA COMPLETO
+            if(cierresHoy.includes("Día Completo")) {
+                grid.innerHTML = '<div class="col-span-4 bg-red-50 p-6 rounded-xl text-center border border-red-100"><p class="text-[11px] font-800 uppercase text-red-800">AGENDA CERRADA</p></div>';
+                return;
+            }
+
+            // 2. Validar SÁBADOS TARDE
+            if(f.getDay() === 6 && turnoGlobal === 'tarde') {
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO SÁBADOS TARDE</p>';
+                return;
+            }
+
+            // 3. Validar TURNO BLOQUEADO (Mañana o Tarde)
+            const nombreTurno = turnoGlobal === 'mañana' ? "Mañana" : "Tarde";
+            if(cierresHoy.includes(nombreTurno)) {
+                grid.innerHTML = `<div class="col-span-4 bg-gray-50 p-6 rounded-xl text-center"><p class="text-[10px] font-800 uppercase text-gray-400 italic">TURNO ${nombreTurno.toUpperCase()} CERRADO</p></div>`;
+                return;
+            }
+
             const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
             const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
             const rango = turnoGlobal === 'mañana' ? mañana : tarde;
@@ -266,15 +243,28 @@
 
             rango.forEach(h => {
                 const [h_h, h_m] = h.split(':').map(Number);
+                const minChip = (h_h * 60) + h_m;
+
+                // LÓGICA DE BLOQUEO INTELIGENTE (Rangos personalizados ej: 11:00 a 13:00)
+                const bloqueadoPorRango = cierresHoy.some(c => {
+                    if (c.includes(" a ")) {
+                        const [ini, fin] = c.split(" a ");
+                        const [iniH, iniM] = ini.split(':').map(Number);
+                        const [finH, finM] = fin.split(':').map(Number);
+                        const minIni = (iniH * 60) + iniM;
+                        const minFin = (finH * 60) + finM;
+                        return minChip >= minIni && minChip < minFin;
+                    }
+                    return false;
+                });
+
+                const estaOcupado = horariosOcupados.includes(h);
+                const esPasado = (fechaGlobal === hoyIso && minChip <= minAhora + 20);
+
                 const chip = document.createElement('button');
                 chip.className = `time-chip py-3 text-[11px] font-bold rounded-lg ${h === horaGlobal ? 'active' : ''}`;
                 chip.innerText = h;
-                
-                // Deshabilitar si está ocupado, bloqueado por admin o el tiempo ya pasó hoy
-                const estaOcupado = horariosOcupados.includes(h);
-                const esPasado = (fechaGlobal === hoyIso && (h_h * 60 + h_m) <= minAhora + 20);
-
-                chip.disabled = estaOcupado || esPasado;
+                chip.disabled = estaOcupado || esPasado || bloqueadoPorRango;
                 
                 chip.onclick = () => {
                     document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('active'));
@@ -295,22 +285,20 @@
                 barbero: barberoActual,
                 email: document.getElementById('email').value.trim()
             };
-            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los pasos.");
+            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Por favor, completa todos los campos.");
             
-            btn.innerText = "PROCESANDO..."; btn.disabled = true;
+            btn.innerText = "RESERVANDO..."; btn.disabled = true;
             try {
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-                document.getElementById('res-barbero').innerText = d.barbero;
-                document.getElementById('res-servicio').innerText = d.servicio;
-                document.getElementById('res-fecha').innerText = d.fecha;
-                document.getElementById('res-hora').innerText = d.hora;
+                document.getElementById('resumen-cita').innerHTML = `
+                    <p>Barbero: ${d.barbero}</p>
+                    <p>Servicio: ${d.servicio}</p>
+                    <p>Día: ${d.fecha}</p>
+                    <p>Hora: ${d.hora}</p>`;
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
                 document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${encodeURIComponent('Hola, cita con '+d.barbero+' el '+d.fecha+' a las '+d.hora)}`;
-            } catch (e) { 
-                alert("Hubo un problema al conectar. Inténtalo de nuevo."); 
-                btn.disabled = false; btn.innerText = "Confirmar Reserva"; 
-            }
+            } catch (e) { alert("Error al confirmar"); btn.disabled = false; btn.innerText = "Confirmar Reserva"; }
         }
     </script>
 </body>
