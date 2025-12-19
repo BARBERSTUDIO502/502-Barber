@@ -16,11 +16,11 @@
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .date-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
-        .date-card.active { background: black; color: white; border-color: black; transform: scale(1.05); }
+        .date-card, .barber-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; cursor: pointer; }
+        .date-card.active, .barber-card.active { background: black; color: white; border-color: black; transform: scale(1.05); }
         .time-chip { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
         .time-chip.active { background: black; color: white; border-color: black; }
-        .time-chip:disabled { opacity: 0.2; cursor: not-allowed; background: #f9fafb; text-decoration: line-through; }
+        .time-chip:disabled { opacity: 0.15; cursor: not-allowed; text-decoration: line-through; }
         .tab-btn.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 800; }
     </style>
 </head>
@@ -34,37 +34,31 @@
                 <h2 class="text-xs md:text-sm tracking-[.6em] uppercase font-light border-b border-white/20 pb-6 inline-block">Barber Studio</h2>
                 <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-500 font-bold mt-8 italic">Óscar Mejicanos</p>
             </header>
-
             <div class="grid grid-cols-3 gap-3 md:gap-4 mb-10 w-full">
                 <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover rounded-sm" alt="B1">
                 <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover rounded-sm" alt="B2">
                 <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover rounded-sm" alt="B3">
-            </div>
-
-            <div class="flex gap-8">
-                <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="hover:scale-125 transition-transform">
-                    <svg class="w-7 h-7" fill="white" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                </a>
-                <a href="https://instagram.com/502barberstudio" target="_blank" class="hover:scale-125 transition-transform">
-                    <svg class="w-7 h-7" fill="white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                </a>
             </div>
         </div>
 
         <div class="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-start overflow-y-auto max-h-screen">
             
             <div id="vista-formulario" class="space-y-8">
-                <h3 class="text-2xl font-800 uppercase tracking-tighter text-center md:text-left">Reservar Cita</h3>
+                <h3 class="text-2xl font-800 uppercase tracking-tighter">Reservar Cita</h3>
                 
                 <div class="space-y-6">
                     <input type="text" id="nombre" placeholder="Nombre completo" class="w-full py-3 text-sm bg-transparent border-none">
                     <input type="tel" id="telefono" placeholder="Teléfono" class="w-full py-3 text-sm bg-transparent border-none">
                 </div>
 
+                <div id="section-barbero" class="hidden space-y-3">
+                    <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400">Elegir Barbero</p>
+                    <div id="barber-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+                </div>
+
                 <div class="space-y-3">
                     <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400" id="display-mes"></p>
-                    <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                        </div>
+                    <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
                 </div>
 
                 <div class="flex p-1 bg-gray-100 rounded-lg">
@@ -72,11 +66,10 @@
                     <button id="tab-tarde" onclick="setTurno('tarde')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md transition-all">Tarde</button>
                 </div>
 
-                <div id="time-grid" class="grid grid-cols-4 gap-2">
-                    </div>
+                <div id="time-grid" class="grid grid-cols-4 gap-2"></div>
 
                 <div class="space-y-6">
-                    <select id="servicio" class="w-full py-3 text-sm bg-transparent border-b border-black font-bold uppercase tracking-tight">
+                    <select id="servicio" class="w-full py-3 text-sm bg-transparent border-b border-black font-bold uppercase">
                         <option value="Corte y lavado" selected>Corte y lavado — 13€</option>
                         <option value="Corte + barba">Corte + barba — 17€</option>
                         <option value="Arreglo barba">Arreglo barba — 7€</option>
@@ -84,7 +77,7 @@
                     <input type="email" id="email" placeholder="Email para confirmar la reserva" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
                 </div>
 
-                <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl">Confirmar Reserva</button>
+                <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 shadow-xl">Confirmar Reserva</button>
             </div>
 
             <div id="vista-exito" class="hidden flex flex-col text-center">
@@ -92,15 +85,14 @@
                 <h2 class="text-3xl font-800 uppercase tracking-tighter">Confirmada</h2>
                 <div class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4">
                     <ul class="space-y-1 font-semibold uppercase text-[11px] tracking-wider text-left">
+                        <li>Barbero: <span id="res-barbero"></span></li>
                         <li>Servicio: <span id="res-servicio"></span></li>
                         <li>Día: <span id="res-fecha"></span></li>
                         <li>Hora: <span id="res-hora"></span></li>
                     </ul>
                 </div>
-                <div class="space-y-3">
-                    <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em]">Modificar o Cancelar</a>
-                    <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Nueva reserva</button>
-                </div>
+                <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em]">Modificar cita</a>
+                <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Nueva reserva</button>
             </div>
         </div>
     </div>
@@ -108,16 +100,46 @@
     <script>
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
         
+        let barberoActual = ""; 
         let fechaGlobal = new Date().toISOString().split('T')[0];
         let turnoGlobal = 'mañana';
         let horaGlobal = '';
         let horariosOcupados = [];
         const cacheHorarios = {};
 
-        window.onload = () => {
+        window.onload = async () => {
             renderizarCalendario();
+            await inicializarEquipo();
             cargarHorarios(fechaGlobal);
         };
+
+        async function inicializarEquipo() {
+            try {
+                const res = await fetch(`${urlScript}?action=getAppointments`);
+                const data = await res.json();
+                const barberos = data.barberos || [];
+
+                if (barberos.length > 1) {
+                    document.getElementById('section-barbero').classList.remove('hidden');
+                    const scroll = document.getElementById('barber-scroll');
+                    barberos.forEach((b, i) => {
+                        const card = document.createElement('div');
+                        card.className = `barber-card flex-shrink-0 px-6 py-4 rounded-xl flex flex-col items-center ${i === 0 ? 'active' : ''}`;
+                        card.innerHTML = `<span class="text-[10px] font-800 uppercase italic">${b[0]}</span>`;
+                        if(i === 0) barberoActual = b[0];
+                        card.onclick = () => {
+                            document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('active'));
+                            card.classList.add('active');
+                            barberoActual = b[0];
+                            cargarHorarios(fechaGlobal);
+                        };
+                        scroll.appendChild(card);
+                    });
+                } else {
+                    barberoActual = barberos.length === 1 ? barberos[0][0] : "Óscar Mejicanos";
+                }
+            } catch (e) { barberoActual = "Óscar Mejicanos"; }
+        }
 
         function renderizarCalendario() {
             const scroll = document.getElementById('date-scroll');
@@ -125,23 +147,18 @@
             const hoy = new Date();
             const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-            
             mesDisplay.innerText = `${meses[hoy.getMonth()]} ${hoy.getFullYear()}`;
 
             for(let i=0; i<14; i++) {
-                const f = new Date();
-                f.setDate(hoy.getDate() + i);
-                
-                // Eliminamos 'if(f.getDay() === 0) continue;' para incluir domingos
+                const f = new Date(); f.setDate(hoy.getDate() + i);
                 const iso = f.toISOString().split('T')[0];
                 const card = document.createElement('div');
-                card.className = `date-card flex-shrink-0 w-14 py-4 rounded-xl flex flex-col items-center justify-center cursor-pointer ${iso === fechaGlobal ? 'active' : ''}`;
+                card.className = `date-card flex-shrink-0 w-14 py-4 rounded-xl flex flex-col items-center ${iso === fechaGlobal ? 'active' : ''}`;
                 card.innerHTML = `<span class="text-[9px] uppercase font-bold mb-1">${dias[f.getDay()]}</span><span class="text-lg font-800">${f.getDate()}</span>`;
                 card.onclick = () => {
                     document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
-                    fechaGlobal = iso;
-                    cargarHorarios(iso);
+                    fechaGlobal = iso; cargarHorarios(iso);
                 };
                 scroll.appendChild(card);
             }
@@ -149,23 +166,20 @@
 
         async function cargarHorarios(fechaSel) {
             const grid = document.getElementById('time-grid');
-            const dObj = new Date(fechaSel);
-            
-            // Caso Domingo: Cerrado todo el día
-            if(dObj.getDay() === 0) {
+            if(new Date(fechaSel).getDay() === 0) {
                 grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS DOMINGOS</p>';
                 return;
             }
-
-            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Cargando horas...</p>';
+            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Consultando disponibilidad...</p>';
             
-            if(cacheHorarios[fechaSel]) {
-                horariosOcupados = cacheHorarios[fechaSel];
+            const key = `${fechaSel}_${barberoActual}`;
+            if(cacheHorarios[key]) {
+                horariosOcupados = cacheHorarios[key];
             } else {
                 try {
-                    const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
+                    const res = await fetch(`${urlScript}?fecha=${fechaSel}&barbero=${encodeURIComponent(barberoActual)}`);
                     horariosOcupados = await res.json();
-                    cacheHorarios[fechaSel] = horariosOcupados;
+                    cacheHorarios[key] = horariosOcupados;
                 } catch (e) { console.error(e); }
             }
             renderizarHoras();
@@ -181,52 +195,29 @@
         function renderizarHoras() {
             const grid = document.getElementById('time-grid');
             const f = new Date(fechaGlobal);
-            const esSabado = f.getDay() === 6;
-            const esDomingo = f.getDay() === 0;
-
-            if(esDomingo) {
-                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS DOMINGOS</p>';
-                return;
-            }
-
-            if(esSabado && turnoGlobal === 'tarde') {
+            if(f.getDay() === 6 && turnoGlobal === 'tarde') {
                 grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS SÁBADOS TARDE</p>';
                 return;
             }
-
             grid.innerHTML = '';
             const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
             const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
-
             const rango = turnoGlobal === 'mañana' ? mañana : tarde;
-            const ahora = new Date();
-            const hoyIso = ahora.toISOString().split('T')[0];
-            const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
+            const ahora = new Date(); const hoyIso = ahora.toISOString().split('T')[0];
+            const minAhora = (ahora.getHours() * 60) + ahora.getMinutes();
 
             rango.forEach(h => {
                 const [h_h, h_m] = h.split(':').map(Number);
-                const minCita = (h_h * 60) + h_m;
-                const estaOcupada = horariosOcupados.includes(h);
-                const esPasada = fechaGlobal === hoyIso && minCita <= (horaActualMinutos + 15);
-
                 const chip = document.createElement('button');
                 chip.className = `time-chip py-3 text-[11px] font-bold rounded-lg ${h === horaGlobal ? 'active' : ''}`;
                 chip.innerText = h;
-                chip.disabled = estaOcupada || esPasada;
-                
+                chip.disabled = horariosOcupados.includes(h) || (fechaGlobal === hoyIso && (h_h * 60 + h_m) <= minAhora + 20);
                 chip.onclick = () => {
                     document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                    horaGlobal = h;
+                    chip.classList.add('active'); horaGlobal = h;
                 };
                 grid.appendChild(chip);
             });
-        }
-
-        function formatearFechaElegante(fechaStr) {
-            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-            const partes = fechaStr.split("-");
-            return parseInt(partes[2]) + " de " + meses[parseInt(partes[1]) - 1] + " de " + partes[0];
         }
 
         async function confirmarCita() {
@@ -237,27 +228,22 @@
                 servicio: document.getElementById('servicio').value,
                 fecha: fechaGlobal,
                 hora: horaGlobal,
+                barbero: barberoActual,
                 email: document.getElementById('email').value.trim()
             };
-
-            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los campos antes de continuar.");
+            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los pasos.");
             
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
-            
             try {
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-                const fBonita = formatearFechaElegante(d.fecha);
+                document.getElementById('res-barbero').innerText = d.barbero;
                 document.getElementById('res-servicio').innerText = d.servicio;
-                document.getElementById('res-fecha').innerText = fBonita;
+                document.getElementById('res-fecha').innerText = d.fecha;
                 document.getElementById('res-hora').innerText = d.hora;
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${fBonita} a las ${d.hora}.`);
-                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${mensajeWa}`;
-            } catch (e) { 
-                alert("Error de conexión."); 
-                btn.disabled = false; btn.innerText = "Confirmar Reserva";
-            }
+                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${encodeURIComponent('Hola, cita con '+d.barbero+' el '+d.fecha)}`;
+            } catch (e) { alert("Error"); btn.disabled = false; btn.innerText = "Confirmar Reserva"; }
         }
     </script>
 </body>
