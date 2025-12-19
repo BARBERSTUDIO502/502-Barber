@@ -11,16 +11,12 @@
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Arrastre en PC mejorado */
         .scroll-container { cursor: grab; user-select: none; overflow-x: auto; display: flex; gap: 12px; scroll-behavior: smooth; }
         .scroll-container:active { cursor: grabbing; scroll-behavior: auto; }
-
         input { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
         .date-card, .barber-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; cursor: pointer; flex-shrink: 0; }
         .date-card.active, .barber-card.active { background: black; color: white; border-color: black; transform: scale(1.05); }
         .time-chip { transition: all 0.2s ease; border: 1px solid #e5e7eb; background: white; }
@@ -47,7 +43,6 @@
         </div>
 
         <div class="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-start overflow-y-auto max-h-[100vh]">
-            
             <div id="vista-formulario" class="space-y-8">
                 <h3 class="text-2xl font-800 uppercase tracking-tighter">Reservar Cita</h3>
                 
@@ -67,8 +62,8 @@
                 </div>
 
                 <div class="flex p-1 bg-gray-100 rounded-lg">
-                    <button id="tab-manana" onclick="setTurno('mañana')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md active transition-all">Mañana</button>
-                    <button id="tab-tarde" onclick="setTurno('tarde')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md transition-all">Tarde</button>
+                    <button id="tab-manana" onclick="setTurno('mañana')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md active">Mañana</button>
+                    <button id="tab-tarde" onclick="setTurno('tarde')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md">Tarde</button>
                 </div>
 
                 <div id="time-grid" class="grid grid-cols-4 gap-2"></div>
@@ -89,7 +84,7 @@
                 <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
                 <h2 class="text-3xl font-800 uppercase tracking-tighter italic">Cita Agendada</h2>
                 <div id="resumen-cita" class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4 uppercase font-bold text-[11px] text-left"></div>
-                <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all">Gestionar por WhatsApp</a>
+                <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em]">WhatsApp</a>
                 <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Hacer otra reserva</button>
             </div>
         </div>
@@ -97,7 +92,6 @@
 
     <script>
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
-        
         let barberoActual = ""; 
         let fechaGlobal = new Date().toISOString().split('T')[0];
         let turnoGlobal = 'mañana';
@@ -112,7 +106,6 @@
             cargarHorarios(fechaGlobal);
         };
 
-        // --- SCROLL PC (Click y Arrastrar) ---
         function setupDragScroll() {
             const sliders = document.querySelectorAll('.scroll-container');
             sliders.forEach(slider => {
@@ -130,18 +123,21 @@
             });
         }
 
-        // --- NORMALIZAR FECHAS (Cura el problema dd/mm/yyyy vs yyyy-mm-dd) ---
+        // --- NORMALIZACIÓN DE FECHAS (Crucial para 25/12/2025) ---
         function normalizeDate(dateStr) {
             if (!dateStr) return "";
+            let d, m, y;
             if (dateStr.includes('/')) {
-                const [d, m, y] = dateStr.split('/');
-                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                [d, m, y] = dateStr.split('/');
+            } else if (dateStr.includes('-')) {
+                const parts = dateStr.split('T')[0].split('-');
+                if (parts[0].length === 4) { [y, m, d] = parts; } else { [d, m, y] = parts; }
             }
-            return dateStr.split('T')[0];
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
         }
 
-        // --- CONVERTIR HORA A MINUTOS PARA COMPARAR ---
         function timeToMin(h) {
+            if(!h) return 0;
             const [hh, mm] = h.split(':').map(Number);
             return (hh * 60) + mm;
         }
@@ -152,7 +148,6 @@
                 const data = await res.json();
                 const barberos = data.barberos || [];
                 const scroll = document.getElementById('barber-scroll');
-
                 if (barberos.length > 0) {
                     document.getElementById('section-barbero').classList.remove('hidden');
                     barberos.forEach((b, i) => {
@@ -162,9 +157,7 @@
                         if(i === 0) barberoActual = b[0];
                         card.onclick = () => {
                             document.querySelectorAll('.barber-card').forEach(c => c.classList.remove('active'));
-                            card.classList.add('active');
-                            barberoActual = b[0];
-                            cargarHorarios(fechaGlobal);
+                            card.classList.add('active'); barberoActual = b[0]; cargarHorarios(fechaGlobal);
                         };
                         scroll.appendChild(card);
                     });
@@ -188,8 +181,7 @@
                 card.innerHTML = `<span class="text-[9px] uppercase font-bold mb-1">${dias[f.getDay()]}</span><span class="text-lg font-800">${f.getDate()}</span>`;
                 card.onclick = () => {
                     document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
-                    card.classList.add('active');
-                    fechaGlobal = iso; cargarHorarios(iso);
+                    card.classList.add('active'); fechaGlobal = iso; cargarHorarios(iso);
                 };
                 scroll.appendChild(card);
             }
@@ -197,20 +189,12 @@
 
         async function cargarHorarios(fechaSel) {
             const grid = document.getElementById('time-grid');
-            if(new Date(fechaSel).getDay() === 0) {
-                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">DOMINGOS CERRADO</p>';
-                return;
-            }
-            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Sincronizando agenda...</p>';
-            
+            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Sincronizando...</p>';
             try {
                 const res = await fetch(`${urlScript}?fecha=${fechaSel}&barbero=${encodeURIComponent(barberoActual)}`);
                 const data = await res.json();
-                
-                // data.cierres debe ser el array de filas de la pestaña cierres
                 horariosOcupados = data.ocupados || [];
                 cierresHoy = data.cierres || [];
-                
                 renderizarHoras();
             } catch (e) { grid.innerHTML = '<p class="text-red-500 text-center col-span-4 text-[10px]">Sin conexión</p>'; }
         }
@@ -224,39 +208,54 @@
 
         function renderizarHoras() {
             const grid = document.getElementById('time-grid');
-            const fIso = fechaGlobal;
+            const fDate = new Date(fechaGlobal + "T00:00:00");
+            const diaSemana = fDate.getDay(); 
             grid.innerHTML = '';
 
-            // 1. FILTRAR CIERRES PARA EL DÍA Y BARBERO ACTUAL
-            const cierresActivos = cierresHoy.filter(c => normalizeDate(c[0]) === fIso && c[1] === barberoActual);
-
-            // 2. VALIDAR DÍA COMPLETO
-            if(cierresActivos.some(c => c[4] === "Día Completo")) {
-                grid.innerHTML = '<div class="col-span-4 bg-red-50 p-8 rounded-xl text-center border border-red-100"><p class="text-[12px] font-800 uppercase text-red-800 tracking-widest">AGENDA CERRADA</p></div>';
+            // 1. REGLA MAESTRA: DOMINGOS (0)
+            if (diaSemana === 0) {
+                grid.innerHTML = '<div class="col-span-4 py-8 bg-gray-50 rounded-xl text-center"><p class="text-[10px] font-800 uppercase text-gray-400 italic">DOMINGOS CERRADO</p></div>';
                 return;
             }
 
-            // 3. VALIDAR TURNOS
-            const turnoNombre = turnoGlobal === 'mañana' ? "Mañana" : "Tarde";
-            if(cierresActivos.some(c => c[4] === turnoNombre)) {
-                grid.innerHTML = `<div class="col-span-4 bg-gray-50 p-8 rounded-xl text-center border border-gray-100"><p class="text-[10px] font-800 uppercase text-gray-400 italic">TURNO ${turnoNombre.toUpperCase()} CERRADO</p></div>`;
+            // 2. FILTRAR BLOQUEOS DE BBDD PARA ESTA FECHA Y BARBERO
+            const cierresActivos = cierresHoy.filter(c => normalizeDate(c[0]) === fechaGlobal && c[1] === barberoActual);
+
+            // 3. REGLA MAESTRA: DÍA COMPLETO (25 DIC)
+            if (cierresActivos.some(c => c[4] === "Día Completo")) {
+                grid.innerHTML = '<div class="col-span-4 bg-red-50 p-8 rounded-xl text-center border border-red-100"><p class="text-[12px] font-800 uppercase text-red-800 tracking-widest">ESTABLECIMIENTO CERRADO</p></div>';
+                return;
+            }
+
+            // 4. REGLA MAESTRA: SÁBADOS TARDE
+            if (diaSemana === 6 && turnoGlobal === 'tarde') {
+                grid.innerHTML = '<div class="col-span-4 py-8 bg-gray-50 rounded-xl text-center"><p class="text-[10px] font-800 uppercase text-gray-400 italic">SÁBADOS TARDE CERRADO</p></div>';
+                return;
+            }
+
+            // 5. VALIDAR TURNO BLOQUEADO (Mañana/Tarde del Admin)
+            const nombreTurno = turnoGlobal === 'mañana' ? "Mañana" : "Tarde";
+            if (cierresActivos.some(c => c[4] === nombreTurno)) {
+                grid.innerHTML = `<div class="col-span-4 bg-gray-50 p-8 rounded-xl text-center border border-gray-100"><p class="text-[10px] font-800 uppercase text-gray-400 italic">TURNO ${nombreTurno.toUpperCase()} CERRADO</p></div>`;
                 return;
             }
 
             const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
             const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
             const rango = turnoGlobal === 'mañana' ? mañana : tarde;
-            const ahora = new Date(); const hoyIso = ahora.toISOString().split('T')[0];
+            const ahora = new Date(); 
+            const hoyIso = ahora.toISOString().split('T')[0];
             const minAhora = (ahora.getHours() * 60) + ahora.getMinutes();
 
             rango.forEach(h => {
                 const minChip = timeToMin(h);
 
-                // 4. VALIDAR RANGOS ESPECÍFICOS (Ej: 10:00 a 12:00)
+                // 6. VALIDAR BLOQUEO POR RANGO ESPECÍFICO (Ej: 10:00 a 12:00)
                 const bloqueadoPorRango = cierresActivos.some(c => {
                     const minIni = timeToMin(c[2]);
                     const minFin = timeToMin(c[3]);
-                    return minChip >= minIni && minChip < minFin;
+                    // Si el inicio y fin están definidos, comprobamos si el chip cae dentro
+                    return (minIni > 0 && minFin > 0) && (minChip >= minIni && minChip < minFin);
                 });
 
                 const estaOcupado = horariosOcupados.includes(h);
@@ -286,19 +285,18 @@
                 barbero: barberoActual,
                 email: document.getElementById('email').value.trim()
             };
-            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los pasos.");
+            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los campos.");
             
             btn.innerText = "RESERVANDO..."; btn.disabled = true;
             try {
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
                 document.getElementById('resumen-cita').innerHTML = `
                     <p class="text-gray-400">BARBERO:</p><p class="mb-2">${d.barbero}</p>
-                    <p class="text-gray-400">SERVICIO:</p><p class="mb-2">${d.servicio}</p>
                     <p class="text-gray-400">FECHA:</p><p class="mb-2">${d.fecha}</p>
                     <p class="text-gray-400">HORA:</p><p>${d.hora}</p>`;
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${encodeURIComponent('Hola, tengo cita con '+d.barbero+' el '+d.fecha+' a las '+d.hora)}`;
+                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${encodeURIComponent('Cita con '+d.barbero+' el '+d.fecha+' a las '+d.hora)}`;
             } catch (e) { alert("Error"); btn.disabled = false; btn.innerText = "Confirmar Reserva"; }
         }
     </script>
