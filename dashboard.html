@@ -9,88 +9,51 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
-        
-        .tab-btn { 
-            border: 1px solid #e5e7eb; 
-            border-bottom: 1px solid black; 
-            background: #f3f4f6; 
-            color: #9ca3af; 
-            transition: all 0.2s; 
-            position: relative;
-            top: 1px;
-        }
-        .tab-active { 
-            background: white !important; 
-            color: black !important; 
-            font-weight: 800; 
-            border: 1px solid black !important; 
-            border-bottom: 2px solid white !important;
-            border-top: 4px solid black !important;
-            z-index: 10;
-        }
-        
+        .tab-btn { border: 1px solid #e5e7eb; border-bottom: 1px solid black; background: #f3f4f6; color: #9ca3af; transition: all 0.2s; position: relative; top: 1px; }
+        .tab-active { background: white !important; color: black !important; font-weight: 800; border: 1px solid black !important; border-bottom: 2px solid white !important; border-top: 4px solid black !important; z-index: 10; }
         .subtab-active { border-bottom: 2px solid black; color: black; font-weight: 800; }
         input, select, textarea { border-bottom: 1px solid black !important; outline: none; background: transparent; }
         .fade-in { animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-
-        /* Estilos para Modales */
-        .modal-overlay {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            transition: all 0.3s;
-        }
-        .modal-content {
-            box-shadow: 15px 15px 0px 0px rgba(0,0,0,1);
-            border: 2px solid black;
-            animation: modalSlide 0.3s ease-out;
-        }
-        @keyframes modalSlide {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        .modal-overlay { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 50; }
+        .modal-content { box-shadow: 15px 15px 0px 0px rgba(0,0,0,1); border: 2px solid black; animation: modalSlide 0.3s ease-out; }
+        @keyframes modalSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body class="p-2 md:p-10">
 
-    <div id="modal-ficha" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+    <div id="modal-ficha" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
         <div class="bg-white modal-content w-full max-w-lg p-8">
             <div class="flex justify-between items-start mb-6">
                 <div>
-                    <h2 id="ficha-nombre" class="text-2xl font-800 italic uppercase">NOMBRE CLIENTE</h2>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Ficha Técnica Profesional</p>
+                    <h2 id="ficha-nombre" class="text-2xl font-800 italic uppercase">Cargando...</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Notas Técnicas del Cliente</p>
                 </div>
-                <button onclick="cerrarModal('modal-ficha')" class="text-2xl hover:rotate-90 transition-transform">✕</button>
+                <button onclick="cerrarModal('modal-ficha')" class="text-2xl">✕</button>
             </div>
-            <div class="mb-6">
-                <label class="text-[10px] font-800 uppercase block mb-2 text-gray-500 italic">Notas de Estilo y Preferencias</label>
-                <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium focus:bg-white transition-colors" placeholder="Escribe aquí las especificaciones técnicas..."></textarea>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="guardarNotas()" class="flex-1 bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Guardar Cambios</button>
-            </div>
+            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Añade notas sobre el corte, degradado, productos..."></textarea>
+            <button onclick="guardarNotas()" class="w-full bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Guardar Notas</button>
         </div>
     </div>
 
-    <div id="modal-edit" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+    <div id="modal-edit" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
         <div class="bg-white modal-content w-full max-w-md p-8">
             <div class="flex justify-between items-start mb-6">
-                <h2 class="text-2xl font-800 italic uppercase italic">Reagendar Cita</h2>
+                <h2 class="text-2xl font-800 italic uppercase">Reagendar Cita</h2>
                 <button onclick="cerrarModal('modal-edit')" class="text-2xl">✕</button>
             </div>
             <input type="hidden" id="edit-id">
             <div class="space-y-6">
                 <div>
                     <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Nueva Fecha</label>
-                    <input type="date" id="edit-fecha" class="w-full py-2 font-bold text-lg">
+                    <input type="date" id="edit-fecha" class="w-full py-2 font-bold">
                 </div>
                 <div>
                     <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Nueva Hora</label>
-                    <input type="time" id="edit-hora" class="w-full py-2 font-bold text-lg">
+                    <input type="time" id="edit-hora" class="w-full py-2 font-bold">
                 </div>
             </div>
-            <button onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Actualizar Cita</button>
+            <button onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800">Actualizar Reserva</button>
         </div>
     </div>
 
@@ -101,9 +64,7 @@
                 <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2">GESTIÓN PROFESIONAL</p>
             </div>
             <div class="flex flex-col items-end gap-1">
-                <button onclick="cargarAgenda(true)" class="bg-black text-white px-6 py-2 font-bold text-[10px] uppercase hover:bg-gray-800 transition-all shadow-md">
-                    Sincronizar Datos
-                </button>
+                <button onclick="cargarAgenda(true)" class="bg-black text-white px-6 py-2 font-bold text-[10px] uppercase hover:bg-gray-800 transition-all shadow-md">Sincronizar Datos</button>
                 <span id="last-update" class="text-[8px] text-gray-400 font-bold uppercase"></span>
             </div>
         </header>
@@ -144,18 +105,12 @@
                 <div class="card-admin p-6 h-fit border-dashed bg-gray-50/50">
                     <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Jornada</h4>
                     <div class="space-y-6">
-                        <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label>
-                            <select id="cierre-barbero" class="w-full py-2 font-bold italic"></select>
-                        </div>
-                        <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Fecha</label>
-                            <input type="date" id="cierre-fecha" class="w-full py-2 font-bold">
-                        </div>
+                        <div><label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label><select id="cierre-barbero" class="w-full py-2 font-bold italic"></select></div>
+                        <div><label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Fecha</label><input type="date" id="cierre-fecha" class="w-full py-2 font-bold"></div>
                         <div class="space-y-2 pt-2">
-                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
-                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
-                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el Día</button>
+                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white">Mañana</button>
+                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white">Tarde</button>
+                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white">Todo el Día</button>
                         </div>
                     </div>
                 </div>
@@ -173,9 +128,6 @@
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <input type="text" id="new-barber-name" placeholder="Nombre completo" class="flex-1 py-2 text-sm uppercase font-bold">
                         <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir</button>
-                    </div>
-                    <div class="border-l-4 border-black pl-4 py-1">
-                        <p class="text-[9px] text-gray-400 font-800 uppercase leading-relaxed italic">* Los barberos aparecerán en la web de clientes.</p>
                     </div>
                 </div>
                 <div id="lista-barberos" class="space-y-3"></div>
@@ -203,7 +155,6 @@
             } else document.body.innerHTML = "Denegado";
         };
 
-        // --- FUNCIONES DE FORMATO ---
         function normalizeDate(dateStr) {
             if (!dateStr) return "";
             if (dateStr.includes('/')) {
@@ -218,7 +169,6 @@
             return fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
-        // --- GESTIÓN DE MODALES ---
         function cerrarModal(id) { document.getElementById(id).classList.add('hidden'); }
 
         function abrirFicha(id, nombre, notas) {
@@ -254,12 +204,10 @@
         }
 
         function abrirWhatsApp(telefono) {
-            const limpio = String(telefono).replace(/\D/g, '');
-            const prefijo = limpio.startsWith('34') ? limpio : '34' + limpio;
-            window.open(`https://wa.me/${prefijo}`, '_blank');
+            const num = String(telefono).replace(/\D/g, '');
+            window.open(`https://wa.me/${num.startsWith('34') ? num : '34'+num}`, '_blank');
         }
 
-        // --- LÓGICA PRINCIPAL ---
         async function cargarAgenda(showLoading = true) {
             if(showLoading) document.getElementById('loading').classList.remove('hidden');
             try {
@@ -287,79 +235,63 @@
 
         function renderizarCitas() {
             const hoyStr = new Date().toISOString().split('T')[0];
-            const validas = todasLasCitas.filter(c => !c[1].includes("CANCELADA"));
+            const validas = todasLasCitas.filter(c => !String(c[1]).includes("CANCELADA"));
             
-            // --- CÁLCULO CAJA Y PRÓXIMA ---
+            // CAJA HOY
             const hoyCitas = validas.filter(c => normalizeDate(c[5]) === hoyStr);
             let totalCaja = 0;
-            hoyCitas.forEach(c => {
-                const serv = c[3]; // Columna de servicio
-                totalCaja += precios[serv] || 0;
-            });
+            hoyCitas.forEach(c => { totalCaja += precios[c[3]] || 0; });
             document.getElementById('ingresos-hoy').innerText = totalCaja + "€";
             document.getElementById('total-citas').innerText = hoyCitas.length;
             
-            const proximas = hoyCitas.filter(c => c[6] > new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', hour12: false})).sort((a,b) => a[6].localeCompare(b[6]));
+            const proximas = hoyCitas.filter(c => c[6] > new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', hour12:false})).sort((a,b)=>a[6].localeCompare(b[6]));
             document.getElementById('proxima-cita').innerText = proximas.length > 0 ? proximas[0][6] : "--";
 
-            let filtered = [];
-            if(filtroCitas === 'hoy') filtered = hoyCitas;
-            else if(filtroCitas === 'futuro') filtered = validas.filter(c => normalizeDate(c[5]) > hoyStr);
-            else if(filtroCitas === 'pasado') {
-                const d = document.getElementById('fecha-desde').value;
-                const h = document.getElementById('fecha-hasta').value;
-                filtered = validas.filter(c => { const fc = normalizeDate(c[5]); return fc >= d && fc <= h; });
-            }
+            let filtered = (filtroCitas === 'hoy') ? hoyCitas : (filtroCitas === 'futuro') ? validas.filter(c => normalizeDate(c[5]) > hoyStr) : validas.filter(c => {
+                const fc = normalizeDate(c[5]);
+                return fc >= document.getElementById('fecha-desde').value && fc <= document.getElementById('fecha-hasta').value;
+            });
             
-            filtered.sort((a,b) => normalizeDate(a[5]) === normalizeDate(b[5]) ? a[6].localeCompare(b[6]) : normalizeDate(a[5]).localeCompare(normalizeDate(b[5])));
+            filtered.sort((a,b) => normalizeDate(a[5]).localeCompare(normalizeDate(b[5])) || a[6].localeCompare(b[6]));
 
             document.getElementById('lista-citas').innerHTML = filtered.map(c => {
-                const notasLimpias = c[4] ? c[4].replace(/'/g, "\\'") : "";
+                const notasLimpias = c[4] ? String(c[4]).replace(/'/g, "\\'") : "";
                 return `
-                <tr class="hover:bg-gray-50 transition-all border-b border-gray-100">
+                <tr class="hover:bg-gray-50 border-b border-gray-100">
                     <td class="p-4 font-800 text-xl italic w-24">${c[6]}</td>
                     <td class="p-4">
-                        <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasLimpias}')" class="text-[12px] font-800 uppercase hover:underline text-left block">
-                            ${c[1]}
-                        </button>
+                        <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasLimpias}')" class="text-[12px] font-800 uppercase hover:underline text-left block">${c[1]}</button>
                         <span class="text-[9px] text-gray-500 font-bold uppercase">${c[3]}</span><br>
-                        <span class="text-[8px] text-gray-300 font-bold uppercase">${formatFechaLarga(c[5])} · ${c[8] || 'Óscar'}</span>
+                        <span class="text-[8px] text-gray-400 font-bold uppercase">${formatFechaLarga(c[5])} · ${c[8] || 'Óscar'}</span>
                     </td>
                     <td class="p-4 text-right">
-                        <div class="flex gap-2 justify-end items-center">
-                            <button onclick="abrirWhatsApp('${c[2]}')" class="p-2 hover:scale-110 transition-transform">
-                                <svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg>
-                            </button>
-                            <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}')" class="border border-black px-2 py-1 text-[8px] font-800 uppercase hover:bg-black hover:text-white">Edit</button>
-                            <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 px-2 py-1 text-[8px] hover:bg-red-500 hover:text-white transition-all">✕</button>
+                        <div class="flex gap-3 justify-end items-center">
+                            <button onclick="abrirWhatsApp('${c[2]}')"><svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg></button>
+                            <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}')"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 px-2 py-0.5 text-[10px] hover:bg-red-500 hover:text-white transition-all font-bold">✕</button>
                         </div>
                     </td>
                 </tr>`}).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin citas registradas</td></tr>`;
         }
 
-        // --- RESTO DE FUNCIONES (SIN CAMBIOS) ---
         function renderizarCalendario() {
             const sel = document.getElementById('cierre-barbero');
             sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
-            const cierres = [...todosLosCierres].sort((a,b) => normalizeDate(a[0]).localeCompare(normalizeDate(b[0])));
-            document.getElementById('lista-cierres').innerHTML = cierres.map(c => `
+            document.getElementById('lista-cierres').innerHTML = todosLosCierres.sort((a,b)=>normalizeDate(a[0]).localeCompare(normalizeDate(b[0]))).map(c => `
                 <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black">
-                    <div>
-                        <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase">${c[0].split(' ')[0]}</p>
-                        <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold italic">${c[4]}</p>
-                    </div>
+                    <div><p class="text-[10px] font-800 uppercase italic">${c[1]}</p><p class="text-[9px] font-bold text-gray-400 uppercase">${c[0].split(' ')[0]}</p><p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold italic">${c[4]}</p></div>
                     <button onclick="borrarCierre('${c[0].split(' ')[0]}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2">✕</button>
                 </div>`).join('') || `<p class="p-4 text-xs text-gray-400 uppercase">No hay bloqueos</p>`;
         }
 
         function renderizarEquipo() {
             document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
-                const esOscar = b[0].toLowerCase().includes("oscar");
+                const nombre = b[0].toLowerCase().trim();
+                const esOscar = nombre === "oscar" || nombre === "óscar";
                 return `
                 <div class="p-4 bg-white border border-black flex justify-between items-center">
                     <span class="font-800 uppercase text-xs italic">${b[0]}</span>
-                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase tracking-widest border border-gray-100 px-2 py-1">FUNDADOR</span>`}
+                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase tracking-widest border border-gray-100 px-2 py-1">FIJO</span>`}
                 </div>`;
             }).join('');
         }
@@ -384,7 +316,7 @@
             const fecha = document.getElementById('cierre-fecha').value;
             if(!fecha) return alert("Selecciona fecha");
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClosure', barbero: barber, fecha, tipo }) });
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClosure', barbero: barber, fecha: fecha, tipo: tipo }) });
             cargarAgenda();
         }
 
@@ -405,13 +337,14 @@
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Anular esta cita?")) return;
+            if(!confirm("¿Anular esta cita? El cliente será notificado.")) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
             cargarAgenda();
         }
 
         async function borrarCierre(f, b, t) {
+            if(!confirm("¿Reabrir esta jornada?")) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha: f, barbero: b, tipo: t }) });
             cargarAgenda();
