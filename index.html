@@ -11,6 +11,11 @@
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Cursor de agarre para PC */
+        .scroll-container { cursor: grab; user-select: none; }
+        .scroll-container:active { cursor: grabbing; }
+
         input { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
         #vista-exito { animation: fadeIn 0.6s ease-out; }
@@ -53,12 +58,12 @@
 
                 <div id="section-barbero" class="hidden space-y-3">
                     <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400">Elegir Barbero</p>
-                    <div id="barber-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+                    <div id="barber-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 scroll-container"></div>
                 </div>
 
                 <div class="space-y-3">
                     <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400" id="display-mes"></p>
-                    <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+                    <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2 scroll-container"></div>
                 </div>
 
                 <div class="flex p-1 bg-gray-100 rounded-lg">
@@ -105,13 +110,40 @@
         let turnoGlobal = 'mañana';
         let horaGlobal = '';
         let horariosOcupados = [];
+        let cierresHoy = []; // Variable para guardar los bloqueos del administrador
         const cacheHorarios = {};
 
         window.onload = async () => {
+            initDragToScroll(); // Iniciar funcionalidad para PC
             renderizarCalendario();
             await inicializarEquipo();
             cargarHorarios(fechaGlobal);
         };
+
+        // --- FUNCIONALIDAD SCROLL PARA PC (DRAG TO SCROLL) ---
+        function initDragToScroll() {
+            const sliders = document.querySelectorAll('.scroll-container');
+            sliders.forEach(slider => {
+                let isDown = false;
+                let startX;
+                let scrollLeft;
+
+                slider.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    startX = e.pageX - slider.offsetLeft;
+                    scrollLeft = slider.scrollLeft;
+                });
+                slider.addEventListener('mouseleave', () => { isDown = false; });
+                slider.addEventListener('mouseup', () => { isDown = false; });
+                slider.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - slider.offsetLeft;
+                    const walk = (x - startX) * 2; // Velocidad de scroll
+                    slider.scrollLeft = scrollLeft - walk;
+                });
+            });
+        }
 
         async function inicializarEquipo() {
             try {
@@ -172,17 +204,25 @@
             }
             grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Consultando disponibilidad...</p>';
             
-            const key = `${fechaSel}_${barberoActual}`;
-            if(cacheHorarios[key]) {
-                horariosOcupados = cacheHorarios[key];
-            } else {
-                try {
-                    const res = await fetch(`${urlScript}?fecha=${fechaSel}&barbero=${encodeURIComponent(barberoActual)}`);
-                    horariosOcupados = await res.json();
-                    cacheHorarios[key] = horariosOcupados;
-                } catch (e) { console.error(e); }
+            try {
+                // Modificado para recibir también los bloqueos (cierres) de la BBDD
+                const res = await fetch(`${urlScript}?fecha=${fechaSel}&barbero=${encodeURIComponent(barberoActual)}`);
+                const data = await res.json();
+                
+                // Si la BBDD devuelve un objeto con {ocupados: [], cierres: []}
+                if (data.cierres) {
+                    horariosOcupados = data.ocupados || [];
+                    cierresHoy = data.cierres || [];
+                } else {
+                    horariosOcupados = data;
+                    cierresHoy = [];
+                }
+                
+                renderizarHoras();
+            } catch (e) { 
+                console.error(e); 
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase text-red-400">Error al cargar horarios</p>';
             }
-            renderizarHoras();
         }
 
         function setTurno(turno) {
@@ -195,10 +235,28 @@
         function renderizarHoras() {
             const grid = document.getElementById('time-grid');
             const f = new Date(fechaGlobal);
+
+            // 1. RESTRICCIÓN: DIA COMPLETO CERRADO
+            if(cierresHoy.includes("Día Completo")) {
+                grid.innerHTML = '<div class="col-span-4 bg-red-50 p-6 rounded-xl text-center border border-red-100"><p class="text-[11px] font-800 uppercase text-red-800">CERRADO TODO EL DÍA</p></div>';
+                return;
+            }
+
+            // 2. RESTRICCIÓN: SÁBADOS TARDE
             if(f.getDay() === 6 && turnoGlobal === 'tarde') {
                 grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">CERRADO LOS SÁBADOS TARDE</p>';
                 return;
             }
+
+            // 3. RESTRICCIÓN: TURNO ESPECÍFICO BLOQUEADO
+            const turnoBloqueado = (turnoGlobal === 'mañana' && cierresHoy.includes("Mañana")) || 
+                                   (turnoGlobal === 'tarde' && cierresHoy.includes("Tarde"));
+            
+            if(turnoBloqueado) {
+                grid.innerHTML = `<div class="col-span-4 bg-gray-50 p-6 rounded-xl text-center"><p class="text-[10px] font-800 uppercase text-gray-400 italic">ESTE TURNO ESTÁ CERRADO</p></div>`;
+                return;
+            }
+
             grid.innerHTML = '';
             const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
             const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
@@ -211,7 +269,13 @@
                 const chip = document.createElement('button');
                 chip.className = `time-chip py-3 text-[11px] font-bold rounded-lg ${h === horaGlobal ? 'active' : ''}`;
                 chip.innerText = h;
-                chip.disabled = horariosOcupados.includes(h) || (fechaGlobal === hoyIso && (h_h * 60 + h_m) <= minAhora + 20);
+                
+                // Deshabilitar si está ocupado, bloqueado por admin o el tiempo ya pasó hoy
+                const estaOcupado = horariosOcupados.includes(h);
+                const esPasado = (fechaGlobal === hoyIso && (h_h * 60 + h_m) <= minAhora + 20);
+
+                chip.disabled = estaOcupado || esPasado;
+                
                 chip.onclick = () => {
                     document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('active'));
                     chip.classList.add('active'); horaGlobal = h;
@@ -242,8 +306,11 @@
                 document.getElementById('res-hora').innerText = d.hora;
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${encodeURIComponent('Hola, cita con '+d.barbero+' el '+d.fecha)}`;
-            } catch (e) { alert("Error"); btn.disabled = false; btn.innerText = "Confirmar Reserva"; }
+                document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${encodeURIComponent('Hola, cita con '+d.barbero+' el '+d.fecha+' a las '+d.hora)}`;
+            } catch (e) { 
+                alert("Hubo un problema al conectar. Inténtalo de nuevo."); 
+                btn.disabled = false; btn.innerText = "Confirmar Reserva"; 
+            }
         }
     </script>
 </body>
