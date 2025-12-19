@@ -19,7 +19,6 @@
         .modal-content { box-shadow: 15px 15px 0px 0px rgba(0,0,0,1); border: 2px solid black; animation: modalSlide 0.3s ease-out; }
         @keyframes modalSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        /* Fix para botones en móvil */
         .actions-container { display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; flex-wrap: nowrap; }
         @media (max-width: 640px) {
             .actions-container { gap: 0.25rem; }
@@ -34,35 +33,35 @@
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 id="ficha-nombre" class="text-2xl font-800 italic uppercase">Nombre</h2>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Atributo: Notas Técnicas (Ficha Cliente)</p>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">Ficha de Cliente: Notas Técnicas</p>
                 </div>
                 <button onclick="cerrarModal('modal-ficha')" class="text-2xl">✕</button>
             </div>
-            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Escribe aquí los detalles técnicos del corte..."></textarea>
-            <button onclick="guardarNotas()" class="w-full bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Actualizar Ficha</button>
+            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Notas técnicas del barbero (Columna D)..."></textarea>
+            <button onclick="guardarNotas()" class="w-full bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Guardar Notas Técnicas</button>
         </div>
     </div>
 
     <div id="modal-edit" class="hidden fixed inset-0 flex items-center justify-center p-4 modal-overlay">
         <div class="bg-white modal-content w-full max-w-md p-8">
             <div class="flex justify-between items-start mb-6">
-                <h2 class="text-2xl font-800 italic uppercase">Reagendar Cita</h2>
+                <h2 class="text-2xl font-800 italic uppercase">Reagendar</h2>
                 <button onclick="cerrarModal('modal-edit')" class="text-2xl">✕</button>
             </div>
             <input type="hidden" id="edit-id">
             <input type="hidden" id="edit-barbero-actual">
             <div class="space-y-6">
                 <div>
-                    <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Fecha de la nueva cita</label>
+                    <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Nueva Fecha</label>
                     <input type="date" id="edit-fecha" class="w-full py-2 font-bold" onchange="actualizarHorasEdit()">
                 </div>
                 <div>
                     <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Horas Disponibles</label>
                     <select id="edit-hora" class="w-full py-2 font-bold bg-white"></select>
                 </div>
-                <p id="edit-aviso" class="text-[10px] font-bold text-gray-400 uppercase italic">Solo se muestran turnos libres para este barbero.</p>
+                <p id="edit-aviso" class="text-[10px] font-bold text-red-500 uppercase hidden italic">⚠️ No se trabaja los domingos</p>
             </div>
-            <button id="btn-confirmar-edit" onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800 transition-all">Confirmar Cambio en Calendario</button>
+            <button id="btn-confirmar-edit" onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800 transition-all">Actualizar en Google Calendar</button>
         </div>
     </div>
 
@@ -90,7 +89,7 @@
             <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="tab-btn px-10 py-4 text-[11px] font-bold uppercase tracking-widest">Equipo</button>
         </nav>
 
-        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold italic">Sincronizando con Google Calendar...</div>
+        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold italic">Sincronizando...</div>
 
         <section id="section-citas" class="fade-in bg-white border border-black p-4">
             <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase text-gray-400">
@@ -106,13 +105,17 @@
                     <button onclick="renderizarCitas()" class="bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
                 </div>
             </div>
-            <div class="overflow-x-auto"><table class="w-full text-left table-auto"><tbody id="lista-citas" class="divide-y divide-gray-100"></tbody></table></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left table-auto">
+                    <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
         </section>
 
         <section id="section-calendario" class="hidden fade-in bg-white border border-black p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="card-admin p-6 h-fit border-dashed bg-gray-50/50">
-                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Agenda</h4>
+                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Jornada</h4>
                     <div class="space-y-6">
                         <div><label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label><select id="cierre-barbero" class="w-full py-2 font-bold italic"></select></div>
                         <div><label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Fecha</label><input type="date" id="cierre-fecha" class="w-full py-2 font-bold"></div>
@@ -124,7 +127,7 @@
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <h4 class="text-[10px] font-800 uppercase mb-4 text-gray-400 tracking-widest italic">Bloqueos Registrados</h4>
+                    <h4 class="text-[10px] font-800 uppercase mb-4 text-gray-400 tracking-widest italic">Bloqueos Confirmados</h4>
                     <div id="lista-cierres" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -158,7 +161,7 @@
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
                 document.getElementById('cierre-fecha').value = hoy;
-                document.getElementById('edit-fecha').min = hoy; // No fechas pasadas en edición
+                document.getElementById('edit-fecha').min = hoy;
                 
                 const cache = localStorage.getItem('barber502Cache');
                 if(cache) { procesarDatos(JSON.parse(cache)); }
@@ -190,7 +193,6 @@
             document.getElementById('modal-ficha').classList.remove('hidden');
         }
 
-        // --- LÓGICA DE REAGENDAMIENTO (EDICIÓN) ---
         function abrirEditor(id, fecha, hora, barbero) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-barbero-actual').value = barbero;
@@ -203,19 +205,28 @@
             const fechaSel = document.getElementById('edit-fecha').value;
             const barbero = document.getElementById('edit-barbero-actual').value;
             const selectHora = document.getElementById('edit-hora');
+            const aviso = document.getElementById('edit-aviso');
+            const btn = document.getElementById('btn-confirmar-edit');
             const ahora = new Date();
             const hoyStr = ahora.toISOString().split('T')[0];
             const horaActualNum = ahora.getHours() * 100 + ahora.getMinutes();
 
+            // Bloqueo de domingos
+            const diaSemana = new Date(fechaSel + "T12:00:00").getDay();
+            if(diaSemana === 0) {
+                aviso.classList.remove('hidden');
+                selectHora.innerHTML = "";
+                btn.disabled = true;
+                return;
+            }
+            aviso.classList.add('hidden');
+            btn.disabled = false;
+
             selectHora.innerHTML = "";
-            
             horasBase.forEach(h => {
                 const hNum = parseInt(h.replace(':',''));
-                
-                // 1. Filtro pasado (si es hoy)
                 if (fechaSel === hoyStr && hNum <= horaActualNum) return;
 
-                // 2. Filtro bloqueos (cierres)
                 const bloqueado = todosLosCierres.some(c => {
                     if (normalizeDate(c[0]) !== fechaSel || c[1] !== barbero) return false;
                     if (c[4] === "Día Completo") return true;
@@ -225,7 +236,6 @@
                 });
                 if (bloqueado) return;
 
-                // 3. Filtro ocupados (otras citas)
                 const ocupado = todasLasCitas.some(c => 
                     normalizeDate(c[5]) === fechaSel && c[6] === h && c[8] === barbero && 
                     c[7] !== document.getElementById('edit-id').value && !String(c[1]).includes("CANCELADA")
@@ -243,7 +253,7 @@
             const id = document.getElementById('edit-id').value;
             const fecha = document.getElementById('edit-fecha').value;
             const hora = document.getElementById('edit-hora').value;
-            if(!hora) return alert("No hay turnos disponibles para esta fecha.");
+            if(!hora) return alert("Selecciona un turno válido.");
             
             document.getElementById('loading').classList.remove('hidden');
             cerrarModal('modal-edit');
@@ -251,22 +261,18 @@
             cargarAgenda();
         }
 
-        // --- WHATSAPP CON MENSAJE AUTOMÁTICO ---
         function mensajeWhatsApp(tel, nombre, servicio, fecha, hora, accion) {
             const num = String(tel).replace(/\D/g, '');
             const fCita = formatFechaLarga(fecha);
             let msg = "";
-            
             if(accion === 'edit') {
-                msg = `Hola ${nombre}, te contacto de 502 Barber Studio por tu cita de ${servicio} el día ${fCita} a las ${hora}. ¿Necesitas realizar algún cambio?`;
+                msg = `Hola ${nombre}, te contacto de 502 Barber Studio por tu cita de ${servicio} el día ${fCita} a las ${hora}. ¿Te viene bien este horario o necesitas ajustarlo?`;
             } else {
-                msg = `Hola ${nombre}, lamentamos informarte que tu cita de ${servicio} para el ${fCita} ha sido cancelada. Por favor, contacta con nosotros para reagendar.`;
+                msg = `Hola ${nombre}, te informamos que hemos tenido que anular tu cita de ${servicio} para el ${fCita}. Por favor, escríbenos para buscar un nuevo hueco.`;
             }
-            
             window.open(`https://wa.me/${num.startsWith('34') ? num : '34'+num}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // --- BACKEND Y RENDER ---
         async function cargarAgenda(showLoading = true) {
             if(showLoading) document.getElementById('loading').classList.remove('hidden');
             try {
@@ -296,12 +302,10 @@
             const hoyStr = new Date().toISOString().split('T')[0];
             const validas = todasLasCitas.filter(c => !String(c[1]).includes("CANCELADA"));
             
+            // Caja hoy
             const hoyCitas = validas.filter(c => normalizeDate(c[5]) === hoyStr);
             let totalCaja = 0;
-            hoyCitas.forEach(c => { 
-                const servKey = String(c[4]).trim();
-                totalCaja += precios[servKey] || 0; 
-            });
+            hoyCitas.forEach(c => { totalCaja += precios[String(c[4]).trim()] || 0; });
             document.getElementById('ingresos-hoy').innerText = totalCaja + "€";
             document.getElementById('total-citas').innerText = hoyCitas.length;
             
@@ -317,19 +321,20 @@
             filtered.sort((a,b) => normalizeDate(a[5]).localeCompare(normalizeDate(b[5])) || a[6].localeCompare(b[6]));
 
             document.getElementById('lista-citas').innerHTML = filtered.map(c => {
-                const notasTécnicas = c[9] ? String(c[9]).replace(/'/g, "\\'") : "";
+                // c[9] es la Columna D de Clientes (Notas Técnicas) según la unión de tu backend
+                const notasTecnicas = c[9] ? String(c[9]).replace(/'/g, "\\'") : "";
                 const barbero = c[8] || 'Óscar';
                 return `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
                     <td class="p-2 md:p-4 font-800 text-lg md:text-xl italic w-16 md:w-24">${c[6]}</td>
                     <td class="p-2 md:p-4">
                         <div class="flex flex-wrap items-baseline gap-2 leading-tight mb-1">
-                            <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasTécnicas}')" class="text-[12px] font-800 uppercase hover:underline">${c[1]}</button>
+                            <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasTecnicas}')" class="text-[12px] font-800 uppercase hover:underline">${c[1]}</button>
                             <span class="text-[10px] font-bold uppercase text-gray-500 bg-gray-100 px-1 italic">${c[4]}</span>
                         </div>
                         <span class="text-[8px] text-gray-400 font-bold uppercase block">${formatFechaLarga(c[5])} · ${barbero}</span>
                     </td>
-                    <td class="p-2 md:p-4 text-right actions-cell">
+                    <td class="p-2 md:p-4 text-right">
                         <div class="actions-container">
                             <button onclick="mensajeWhatsApp('${c[2]}','${c[1]}','${c[4]}','${c[5]}','${c[6]}','edit')" class="btn-action"><svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg></button>
                             <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}', '${barbero}')" class="btn-action"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
@@ -339,7 +344,6 @@
                 </tr>`}).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin citas registradas</td></tr>`;
         }
 
-        // --- FUNCIONES RESTANTES (MANTENIDAS) ---
         function renderizarCalendario() {
             const sel = document.getElementById('cierre-barbero');
             sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
@@ -352,9 +356,8 @@
 
         function renderizarEquipo() {
             document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
-                const nombre = b[0].toLowerCase().trim();
-                const esOscar = nombre === "oscar" || nombre === "óscar";
-                return `<div class="p-4 bg-white border border-black flex justify-between items-center"><span class="font-800 uppercase text-xs italic">${b[0]}</span>${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar Barbero</button>` : `<span class="text-[8px] text-gray-200 uppercase font-bold tracking-widest italic px-2">Propietario</span>`}</div>`;
+                const esOscar = b[0].toLowerCase().trim().includes("oscar");
+                return `<div class="p-4 bg-white border border-black flex justify-between items-center"><span class="font-800 uppercase text-xs italic">${b[0]}</span>${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] text-gray-200 uppercase font-bold tracking-widest italic px-2">Propietario</span>`}</div>`;
             }).join('');
         }
 
