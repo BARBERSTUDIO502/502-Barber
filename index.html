@@ -9,12 +9,20 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #000; margin: 0; }
-        input, select { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        input { -webkit-appearance: none; outline: none; border-radius: 0; border-bottom: 1px solid black !important; }
         .hidden { display: none; }
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
-        .loading-select { opacity: 0.5; pointer-events: none; }
+        
+        /* Estilos personalizados para el nuevo selector */
+        .date-card { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
+        .date-card.active { background: black; color: white; border-color: black; transform: scale(1.05); }
+        .time-chip { transition: all 0.2s ease; border: 1px solid #e5e7eb; }
+        .time-chip.active { background: black; color: white; border-color: black; }
+        .time-chip:disabled { opacity: 0.2; cursor: not-allowed; background: #f9fafb; text-decoration: line-through; }
+        .tab-btn.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 800; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-0 md:p-10">
@@ -29,15 +37,9 @@
             </header>
 
             <div class="grid grid-cols-3 gap-3 md:gap-4 mb-10 w-full">
-                <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
-                    <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería 1">
-                </div>
-                <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
-                    <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería 2">
-                </div>
-                <div class="img-card aspect-[3/4] border border-white/10 rounded-sm">
-                    <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt="Barbería 3">
-                </div>
+                <img src="https://i.ibb.co/WNkLyrn7/1-barberia.webp" class="w-full h-full object-cover rounded-sm" alt="B1">
+                <img src="https://i.ibb.co/v4CzHJzx/2-barberia.webp" class="w-full h-full object-cover rounded-sm" alt="B2">
+                <img src="https://i.ibb.co/kgsDNVGW/3-barberia.webp" class="w-full h-full object-cover rounded-sm" alt="B3">
             </div>
 
             <div class="flex gap-8">
@@ -50,53 +52,55 @@
             </div>
         </div>
 
-        <div class="w-full md:w-1/2 p-10 md:p-16 bg-white flex flex-col justify-center">
+        <div class="w-full md:w-1/2 p-8 md:p-12 bg-white flex flex-col justify-start overflow-y-auto max-h-screen">
             
-            <div id="vista-formulario">
-                <h3 class="text-2xl font-800 uppercase tracking-tighter mb-10 text-center md:text-left">Reservar Cita</h3>
-                <div class="space-y-8">
+            <div id="vista-formulario" class="space-y-8">
+                <h3 class="text-2xl font-800 uppercase tracking-tighter text-center md:text-left">Reservar Cita</h3>
+                
+                <div class="space-y-6">
                     <input type="text" id="nombre" placeholder="Nombre completo" class="w-full py-3 text-sm bg-transparent border-none">
                     <input type="tel" id="telefono" placeholder="Teléfono" class="w-full py-3 text-sm bg-transparent border-none">
+                </div>
 
-                    <select id="servicio" class="w-full py-3 text-sm bg-transparent">
+                <div class="space-y-3">
+                    <p class="text-[10px] uppercase font-800 tracking-widest text-gray-400" id="display-mes">Diciembre 2025</p>
+                    <div id="date-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                        </div>
+                </div>
+
+                <div class="flex p-1 bg-gray-100 rounded-lg">
+                    <button id="tab-manana" onclick="setTurno('mañana')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md active transition-all">Mañana</button>
+                    <button id="tab-tarde" onclick="setTurno('tarde')" class="tab-btn flex-1 py-2 text-[10px] uppercase font-bold tracking-widest rounded-md transition-all">Tarde</button>
+                </div>
+
+                <div id="time-grid" class="grid grid-cols-4 gap-2">
+                    </div>
+
+                <div class="space-y-6">
+                    <select id="servicio" class="w-full py-3 text-sm bg-transparent border-b border-black font-bold uppercase tracking-tight">
                         <option value="Corte y lavado" selected>Corte y lavado — 13€</option>
                         <option value="Corte + barba">Corte + barba — 17€</option>
                         <option value="Arreglo barba">Arreglo barba — 7€</option>
                     </select>
-
-                    <div class="grid grid-cols-2 gap-6">
-                        <input type="date" id="fecha" class="w-full py-3 text-sm bg-transparent">
-                        <select id="hora" class="w-full py-3 text-sm bg-transparent italic font-bold text-center">
-                            <option value="">Hora</option>
-                        </select>
-                    </div>
-
                     <input type="email" id="email" placeholder="Email para justificante" class="w-full py-3 text-sm bg-gray-50 px-4 border-none">
-                    
-                    <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl">Confirmar Reserva</button>
                 </div>
+
+                <button onclick="confirmarCita()" id="btn-reserva" class="w-full bg-black text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] active:scale-95 transition-all shadow-xl">Confirmar Reserva</button>
             </div>
 
-            <div id="vista-exito" class="hidden flex flex-col">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
-                    <h2 class="text-3xl font-800 uppercase tracking-tighter">Confirmada</h2>
-                </div>
+            <div id="vista-exito" class="hidden flex flex-col text-center">
+                <div class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4">✓</div>
+                <h2 class="text-3xl font-800 uppercase tracking-tighter">Confirmada</h2>
                 <div class="text-sm space-y-4 text-gray-800 border-t border-b py-6 my-4">
-                    <p>Estimado cliente,</p>
-                    <p>Le confirmamos que su reserva ha sido registrada correctamente:</p>
-                    <ul class="space-y-1 ml-2 font-semibold uppercase text-[11px] tracking-wider">
-                        <li>Servicio: <span id="res-servicio" class="text-black"></span></li>
-                        <li>Día: <span id="res-fecha" class="text-black"></span></li>
-                        <li>Hora: <span id="res-hora" class="text-black"></span></li>
-                        <li>Ubicación: <span class="text-black">C. Mármoles, 41, 29007 Málaga</span></li>
+                    <ul class="space-y-1 font-semibold uppercase text-[11px] tracking-wider text-left">
+                        <li>Servicio: <span id="res-servicio"></span></li>
+                        <li>Día: <span id="res-fecha"></span></li>
+                        <li>Hora: <span id="res-hora"></span></li>
                     </ul>
-                    <a href="https://share.google/I9ZSYCdpepxZXWipk" target="_blank" class="text-black font-bold underline block mt-2">📍 Ver en Google Maps</a>
                 </div>
-                <div class="w-full space-y-3">
-                    <a id="link-gcal" target="_blank" class="block w-full border-2 border-black bg-black text-white py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center">Añadir a Google Calendar</a>
-                    <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-gray-50">Modificar o Cancelar</a>
-                    <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4 text-center">Nueva reserva</button>
+                <div class="space-y-3">
+                    <a id="btn-whatsapp" target="_blank" class="block w-full border-2 border-black text-black py-4 text-[10px] font-bold uppercase tracking-[0.2em]">Modificar o Cancelar</a>
+                    <button onclick="location.reload()" class="block w-full text-[9px] uppercase tracking-widest text-gray-400 underline mt-4">Nueva reserva</button>
                 </div>
             </div>
         </div>
@@ -104,85 +108,110 @@
 
     <script>
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
-
-        const fechaInput = document.getElementById('fecha');
-        const selectHora = document.getElementById('hora');
-        const hoy = new Date().toISOString().split('T')[0];
         
-        const horariosCache = {};
+        let fechaGlobal = new Date().toISOString().split('T')[0];
+        let turnoGlobal = 'mañana';
+        let horaGlobal = '';
+        let horariosOcupados = [];
+        const cacheHorarios = {};
 
-        function formatearFechaElegante(fechaStr) {
-            const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-            const partes = fechaStr.split("-");
-            return parseInt(partes[2]) + " de " + meses[parseInt(partes[1]) - 1] + " de " + partes[0];
-        }
-
+        // Inicialización
         window.onload = () => {
-            fechaInput.setAttribute('min', hoy);
-            fechaInput.value = hoy;
-            cargarHorarios(hoy);
+            renderizarCalendario();
+            cargarHorarios(fechaGlobal);
         };
 
-        async function cargarHorarios(fechaSel) {
-            const dateObj = new Date(fechaSel);
-            const diaSemana = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
-
-            // 1. Bloqueo inmediato de domingos (Sin esperar al servidor)
-            if (diaSemana === 0) {
-                selectHora.innerHTML = '<option value="" disabled selected>Cerrado</option>';
-                alert("Los domingos la barbería permanece cerrada. Por favor, elige otro día.");
-                return;
-            }
-
-            // 2. Uso de Caché para inmediatez
-            if (horariosCache[fechaSel]) {
-                renderizarOpcionesHora(horariosCache[fechaSel], fechaSel);
-                return;
-            }
-
-            selectHora.innerHTML = '<option value="">Cargando...</option>';
-            selectHora.classList.add('loading-select');
+        function renderizarCalendario() {
+            const scroll = document.getElementById('date-scroll');
+            const mesDisplay = document.getElementById('display-mes');
+            const hoy = new Date();
+            const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
             
-            try {
-                const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
-                const ocupadas = await res.json();
-                horariosCache[fechaSel] = ocupadas;
-                renderizarOpcionesHora(ocupadas, fechaSel);
-            } catch (e) { 
-                selectHora.innerHTML = '<option value="">Error</option>'; 
-            } finally {
-                selectHora.classList.remove('loading-select');
+            mesDisplay.innerText = `${meses[hoy.getMonth()]} ${hoy.getFullYear()}`;
+
+            for(let i=0; i<14; i++) {
+                const f = new Date();
+                f.setDate(hoy.getDate() + i);
+                if(f.getDay() === 0) continue; // Saltar domingos
+
+                const iso = f.toISOString().split('T')[0];
+                const card = document.createElement('div');
+                card.className = `date-card flex-shrink-0 w-14 py-4 rounded-xl flex flex-col items-center justify-center cursor-pointer ${iso === fechaGlobal ? 'active' : ''}`;
+                card.innerHTML = `<span class="text-[9px] uppercase font-bold mb-1">${dias[f.getDay()]}</span><span class="text-lg font-800">${f.getDate()}</span>`;
+                card.onclick = () => {
+                    document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    fechaGlobal = iso;
+                    cargarHorarios(iso);
+                };
+                scroll.appendChild(card);
             }
         }
 
-        function renderizarOpcionesHora(ocupadas, fechaSel) {
-            const dateObj = new Date(fechaSel);
-            const diaSemana = dateObj.getDay();
+        async function cargarHorarios(fechaSel) {
+            const grid = document.getElementById('time-grid');
+            grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[10px] uppercase font-bold text-gray-300 animate-pulse">Cargando horas...</p>';
+            
+            if(cacheHorarios[fechaSel]) {
+                horariosOcupados = cacheHorarios[fechaSel];
+            } else {
+                try {
+                    const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
+                    horariosOcupados = await res.json();
+                    cacheHorarios[fechaSel] = horariosOcupados;
+                } catch (e) { console.error(e); }
+            }
+            renderizarHoras();
+        }
 
-            // Configuración de horarios según el día
-            let horarios = [];
-            if (diaSemana === 6) { // SÁBADO: 10:00 a 14:00
-                horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
-            } else { // LUNES A VIERNES: 10:00 a 20:30 (Última cita 20:00)
-                horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+        function setTurno(turno) {
+            turnoGlobal = turno;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${turno === 'mañana' ? 'manana' : 'tarde'}`).classList.add('active');
+            renderizarHoras();
+        }
+
+        function renderizarHoras() {
+            const grid = document.getElementById('time-grid');
+            grid.innerHTML = '';
+            
+            const f = new Date(fechaGlobal);
+            const esSabado = f.getDay() === 6;
+
+            // Definición de bloques
+            const mañana = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30"];
+            const tarde = ["16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+
+            if(esSabado && turnoGlobal === 'tarde') {
+                grid.innerHTML = '<p class="col-span-4 text-center py-4 text-[9px] uppercase font-bold text-gray-400 italic">Cerrado los sábados tarde</p>';
+                return;
             }
 
+            const rango = turnoGlobal === 'mañana' ? mañana : tarde;
             const ahora = new Date();
-            const esHoy = fechaSel === hoy;
+            const hoyIso = ahora.toISOString().split('T')[0];
             const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
 
-            selectHora.innerHTML = horarios.map(h => {
-                const [h_hora, h_min] = h.split(':').map(Number);
-                const minutosOpcion = (h_hora * 60) + h_min;
-                const estaOcupada = ocupadas.includes(h);
-                const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
-                const deshabilitar = estaOcupada || esPasada;
-                
-                return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ccc"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
-            }).join('');
-        }
+            rango.forEach(h => {
+                const [h_h, h_m] = h.split(':').map(Number);
+                const minCita = (h_h * 60) + h_m;
+                const estaOcupada = horariosOcupados.includes(h);
+                const esPasada = fechaGlobal === hoyIso && minCita <= (horaActualMinutos + 15);
 
-        fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
+                const chip = document.createElement('button');
+                chip.className = `time-chip py-3 text-[11px] font-bold rounded-lg ${h === horaGlobal ? 'active' : ''}`;
+                chip.innerText = h;
+                chip.disabled = estaOcupada || esPasada;
+                
+                chip.onclick = () => {
+                    document.querySelectorAll('.time-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    horaGlobal = h;
+                };
+                grid.appendChild(chip);
+            });
+        }
 
         async function confirmarCita() {
             const btn = document.getElementById('btn-reserva');
@@ -190,27 +219,30 @@
                 nombre: document.getElementById('nombre').value.trim(),
                 telefono: document.getElementById('telefono').value.trim(),
                 servicio: document.getElementById('servicio').value,
-                fecha: document.getElementById('fecha').value,
-                hora: selectHora.value,
+                fecha: fechaGlobal,
+                hora: horaGlobal,
                 email: document.getElementById('email').value.trim()
             };
 
-            if (!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los campos.");
+            if(!d.nombre || !d.telefono || !d.hora || !d.email) return alert("Completa todos los campos antes de continuar.");
             
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
             
             try {
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
-                const fechaBonita = formatearFechaElegante(d.fecha);
+                
                 document.getElementById('res-servicio').innerText = d.servicio;
-                document.getElementById('res-fecha').innerText = fechaBonita;
+                document.getElementById('res-fecha').innerText = d.fecha;
                 document.getElementById('res-hora').innerText = d.hora;
+
                 document.getElementById('vista-formulario').classList.add('hidden');
                 document.getElementById('vista-exito').classList.remove('hidden');
-                const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${fechaBonita} a las ${d.hora}.`);
+                
+                const mensajeWa = encodeURIComponent(`Hola Óscar, soy ${d.nombre}. Quisiera cambiar mi cita de "${d.servicio}" el día ${d.fecha} a las ${d.hora}.`);
                 document.getElementById('btn-whatsapp').href = `https://wa.me/34640080146?text=${mensajeWa}`;
+
             } catch (e) { 
-                alert("Error al conectar."); 
+                alert("Error de conexión."); 
                 btn.disabled = false; btn.innerText = "Confirmar Reserva";
             }
         }
