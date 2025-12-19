@@ -18,6 +18,9 @@
         .modal-overlay { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 50; }
         .modal-content { box-shadow: 15px 15px 0px 0px rgba(0,0,0,1); border: 2px solid black; animation: modalSlide 0.3s ease-out; }
         @keyframes modalSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        /* Ajuste para evitar desbordamiento en móvil */
+        .actions-cell { min-width: 110px; }
     </style>
 </head>
 <body class="p-2 md:p-10">
@@ -31,7 +34,7 @@
                 </div>
                 <button onclick="cerrarModal('modal-ficha')" class="text-2xl">✕</button>
             </div>
-            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Añade notas sobre el corte, degradado, productos..."></textarea>
+            <textarea id="ficha-notas" rows="6" class="w-full border-l-4 border-black bg-gray-50 p-4 text-sm font-medium mb-6" placeholder="Añade notas sobre el corte..."></textarea>
             <button onclick="guardarNotas()" class="w-full bg-black text-white py-4 font-800 uppercase text-xs tracking-widest hover:bg-gray-800 transition-all">Guardar Notas</button>
         </div>
     </div>
@@ -43,17 +46,20 @@
                 <button onclick="cerrarModal('modal-edit')" class="text-2xl">✕</button>
             </div>
             <input type="hidden" id="edit-id">
+            <input type="hidden" id="edit-barbero-actual">
             <div class="space-y-6">
                 <div>
                     <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Nueva Fecha</label>
-                    <input type="date" id="edit-fecha" class="w-full py-2 font-bold">
+                    <input type="date" id="edit-fecha" class="w-full py-2 font-bold" onchange="validarDisponibilidadEdit()">
                 </div>
                 <div>
                     <label class="text-[10px] font-800 uppercase block mb-1 text-gray-500">Nueva Hora</label>
-                    <input type="time" id="edit-hora" class="w-full py-2 font-bold">
+                    <select id="edit-hora" class="w-full py-2 font-bold bg-white" onchange="validarDisponibilidadEdit()">
+                        </select>
                 </div>
+                <div id="edit-aviso" class="text-[10px] font-bold text-red-500 uppercase hidden italic">⚠️ Horario no disponible o bloqueado</div>
             </div>
-            <button onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800">Actualizar Reserva</button>
+            <button id="btn-confirmar-edit" onclick="confirmarEdicion()" class="w-full bg-black text-white py-4 mt-8 font-800 uppercase text-xs hover:bg-gray-800 transition-all">Actualizar Reserva</button>
         </div>
     </div>
 
@@ -97,7 +103,7 @@
                     <button onclick="renderizarCitas()" class="bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
                 </div>
             </div>
-            <div class="overflow-hidden"><table class="w-full text-left table-auto"><tbody id="lista-citas" class="divide-y divide-gray-100"></tbody></table></div>
+            <div class="overflow-x-auto"><table class="w-full text-left table-auto"><tbody id="lista-citas" class="divide-y divide-gray-100"></tbody></table></div>
         </section>
 
         <section id="section-calendario" class="hidden fade-in bg-white border border-black p-6">
@@ -108,9 +114,9 @@
                         <div><label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label><select id="cierre-barbero" class="w-full py-2 font-bold italic"></select></div>
                         <div><label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Fecha</label><input type="date" id="cierre-fecha" class="w-full py-2 font-bold"></div>
                         <div class="space-y-2 pt-2">
-                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white">Mañana</button>
-                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white">Tarde</button>
-                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white">Todo el Día</button>
+                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana</button>
+                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde</button>
+                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el Día</button>
                         </div>
                     </div>
                 </div>
@@ -142,6 +148,8 @@
         const precios = { "Corte y lavado": 13, "Corte + barba": 17, "Arreglo barba": 7 };
         let currentClientEditId = null;
 
+        const horasDisponibles = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+
         window.onload = () => {
             const pass = prompt("Acceso 502:");
             if(pass === "502admin") {
@@ -149,6 +157,15 @@
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
                 document.getElementById('cierre-fecha').value = hoy;
+                
+                // Cargar horas en select edit
+                const selectHora = document.getElementById('edit-hora');
+                horasDisponibles.forEach(h => {
+                    let opt = document.createElement('option');
+                    opt.value = h; opt.innerText = h;
+                    selectHora.appendChild(opt);
+                });
+
                 const cache = localStorage.getItem('barber502Cache');
                 if(cache) { procesarDatos(JSON.parse(cache)); }
                 cargarAgenda(false);
@@ -178,19 +195,51 @@
             document.getElementById('modal-ficha').classList.remove('hidden');
         }
 
-        async function guardarNotas() {
-            const notas = document.getElementById('ficha-notas').value;
-            document.getElementById('loading').classList.remove('hidden');
-            cerrarModal('modal-ficha');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'updateNotes', eventId: currentClientEditId, notas: notas }) });
-            cargarAgenda();
-        }
-
-        function abrirEditor(id, fecha, hora) {
+        function abrirEditor(id, fecha, hora, barbero) {
             document.getElementById('edit-id').value = id;
+            document.getElementById('edit-barbero-actual').value = barbero;
             document.getElementById('edit-fecha').value = normalizeDate(fecha);
             document.getElementById('edit-hora').value = hora;
             document.getElementById('modal-edit').classList.remove('hidden');
+            validarDisponibilidadEdit();
+        }
+
+        function validarDisponibilidadEdit() {
+            const fecha = document.getElementById('edit-fecha').value;
+            const hora = document.getElementById('edit-hora').value;
+            const barbero = document.getElementById('edit-barbero-actual').value;
+            const aviso = document.getElementById('edit-aviso');
+            const btn = document.getElementById('btn-confirmar-edit');
+
+            // 1. Verificar bloqueos (cierres)
+            const bloqueado = todosLosCierres.some(c => {
+                const fCierre = normalizeDate(c[0]);
+                if (fCierre !== fecha || c[1] !== barbero) return false;
+                if (c[4] === "Día Completo") return true;
+                const hNum = parseInt(hora.replace(':',''));
+                if (c[4] === "Mañana" && hNum < 1500) return true;
+                if (c[4] === "Tarde" && hNum >= 1500) return true;
+                return false;
+            });
+
+            // 2. Verificar si ya hay cita a esa hora (excepto la actual)
+            const ocupado = todasLasCitas.some(c => 
+                normalizeDate(c[5]) === fecha && 
+                c[6] === hora && 
+                c[8] === barbero && 
+                c[7] !== document.getElementById('edit-id').value &&
+                !String(c[1]).includes("CANCELADA")
+            );
+
+            if (bloqueado || ocupado) {
+                aviso.classList.remove('hidden');
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            } else {
+                aviso.classList.add('hidden');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
         }
 
         async function confirmarEdicion() {
@@ -200,6 +249,14 @@
             document.getElementById('loading').classList.remove('hidden');
             cerrarModal('modal-edit');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'editAppointment', eventId: id, fecha: fecha, hora: hora }) });
+            cargarAgenda();
+        }
+
+        async function guardarNotas() {
+            const notas = document.getElementById('ficha-notas').value;
+            document.getElementById('loading').classList.remove('hidden');
+            cerrarModal('modal-ficha');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'updateNotes', eventId: currentClientEditId, notas: notas }) });
             cargarAgenda();
         }
 
@@ -237,38 +294,47 @@
             const hoyStr = new Date().toISOString().split('T')[0];
             const validas = todasLasCitas.filter(c => !String(c[1]).includes("CANCELADA"));
             
-            // CAJA HOY
+            // CAJA HOY (Cálculo corregido: todas las del día actual no canceladas)
             const hoyCitas = validas.filter(c => normalizeDate(c[5]) === hoyStr);
             let totalCaja = 0;
-            hoyCitas.forEach(c => { totalCaja += precios[c[3]] || 0; });
+            hoyCitas.forEach(c => { 
+                const servKey = String(c[3]).trim();
+                totalCaja += precios[servKey] || 0; 
+            });
             document.getElementById('ingresos-hoy').innerText = totalCaja + "€";
             document.getElementById('total-citas').innerText = hoyCitas.length;
             
-            const proximas = hoyCitas.filter(c => c[6] > new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', hour12:false})).sort((a,b)=>a[6].localeCompare(b[6]));
+            const ahoraHora = new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', hour12:false});
+            const proximas = hoyCitas.filter(c => c[6] >= ahoraHora).sort((a,b)=>a[6].localeCompare(b[6]));
             document.getElementById('proxima-cita').innerText = proximas.length > 0 ? proximas[0][6] : "--";
 
-            let filtered = (filtroCitas === 'hoy') ? hoyCitas : (filtroCitas === 'futuro') ? validas.filter(c => normalizeDate(c[5]) > hoyStr) : validas.filter(c => {
-                const fc = normalizeDate(c[5]);
-                return fc >= document.getElementById('fecha-desde').value && fc <= document.getElementById('fecha-hasta').value;
-            });
+            let filtered = [];
+            if(filtroCitas === 'hoy') filtered = hoyCitas;
+            else if(filtroCitas === 'futuro') filtered = validas.filter(c => normalizeDate(c[5]) > hoyStr);
+            else if(filtroCitas === 'pasado') {
+                const d = document.getElementById('fecha-desde').value;
+                const h = document.getElementById('fecha-hasta').value;
+                filtered = validas.filter(c => { const fc = normalizeDate(c[5]); return fc >= d && fc <= h; });
+            }
             
             filtered.sort((a,b) => normalizeDate(a[5]).localeCompare(normalizeDate(b[5])) || a[6].localeCompare(b[6]));
 
             document.getElementById('lista-citas').innerHTML = filtered.map(c => {
                 const notasLimpias = c[4] ? String(c[4]).replace(/'/g, "\\'") : "";
+                const barbero = c[8] || 'Óscar';
                 return `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-4 font-800 text-xl italic w-24">${c[6]}</td>
-                    <td class="p-4">
-                        <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasLimpias}')" class="text-[12px] font-800 uppercase hover:underline text-left block">${c[1]}</button>
-                        <span class="text-[9px] text-gray-500 font-bold uppercase">${c[3]}</span><br>
-                        <span class="text-[8px] text-gray-400 font-bold uppercase">${formatFechaLarga(c[5])} · ${c[8] || 'Óscar'}</span>
+                    <td class="p-2 md:p-4 font-800 text-lg md:text-xl italic w-20 md:w-24">${c[6]}</td>
+                    <td class="p-2 md:p-4">
+                        <button onclick="abrirFicha('${c[7]}','${c[1]}','${notasLimpias}')" class="text-[11px] md:text-[12px] font-800 uppercase hover:underline text-left block leading-tight mb-1">${c[1]}</button>
+                        <span class="text-[10px] font-bold uppercase text-black block mb-0.5">${c[3]}</span>
+                        <span class="text-[8px] text-gray-400 font-bold uppercase block">${formatFechaLarga(c[5])} · ${barbero}</span>
                     </td>
-                    <td class="p-4 text-right">
-                        <div class="flex gap-3 justify-end items-center">
-                            <button onclick="abrirWhatsApp('${c[2]}')"><svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg></button>
-                            <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}')"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                            <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 px-2 py-0.5 text-[10px] hover:bg-red-500 hover:text-white transition-all font-bold">✕</button>
+                    <td class="p-2 md:p-4 text-right actions-cell">
+                        <div class="flex gap-2 md:gap-3 justify-end items-center">
+                            <button onclick="abrirWhatsApp('${c[2]}')" title="WhatsApp"><svg class="w-5 h-5 fill-green-500" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.512-2.96-2.626-.088-.113-.716-.953-.716-1.819 0-.866.454-1.292.616-1.47.162-.177.353-.222.47-.222s.235.004.338.008c.113.004.264-.043.413.313.144.353.5 1.22.544 1.309.045.089.074.191.015.308-.059.117-.088.19-.176.293l-.265.308c-.088.098-.182.204-.078.382.104.178.461.761.99 1.231.68.605 1.253.793 1.429.882.176.088.279.074.382-.044.103-.117.441-.514.558-.691.117-.176.235-.147.397-.088.162.059 1.029.485 1.206.574.176.088.293.132.338.205.045.074.045.426-.099.831zM12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 21.818c-5.414 0-9.818-4.404-9.818-9.818s4.404-9.818 9.818-9.818 9.818 4.404 9.818 9.818-4.404 9.818-9.818 9.818z"/></svg></button>
+                            <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}', '${barbero}')" title="Editar"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border-2 border-red-500 px-1.5 py-0.5 text-[10px] hover:bg-red-500 hover:text-white transition-all font-bold" title="Anular">✕</button>
                         </div>
                     </td>
                 </tr>`}).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin citas registradas</td></tr>`;
@@ -291,7 +357,7 @@
                 return `
                 <div class="p-4 bg-white border border-black flex justify-between items-center">
                     <span class="font-800 uppercase text-xs italic">${b[0]}</span>
-                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase tracking-widest border border-gray-100 px-2 py-1">FIJO</span>`}
+                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar Barbero</button>` : `<span class="text-[8px] font-bold text-gray-200 uppercase tracking-widest italic px-2">Propietario</span>`}
                 </div>`;
             }).join('');
         }
@@ -337,7 +403,7 @@
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Anular esta cita? El cliente será notificado.")) return;
+            if(!confirm("¿Deseas anular esta reserva?")) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
             cargarAgenda();
