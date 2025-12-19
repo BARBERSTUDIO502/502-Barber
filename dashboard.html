@@ -24,16 +24,16 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-2 border-black pb-8 px-2 gap-4">
             <div>
                 <h1 class="text-4xl md:text-6xl font-800 tracking-tighter uppercase leading-none italic">502 BARBER STUDIO</h1>
-                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2">Sistema de Gestión Centralizado</p>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2">DASHBOARD DE ADMINISTRACIÓN</p>
             </div>
             <button onclick="cargarAgenda()" class="flex items-center gap-2 px-6 py-2 bg-black text-white font-bold text-[10px] uppercase hover:bg-gray-800 transition-all">
-                Sincronizar Todo
+                Sincronizar Datos
             </button>
         </header>
 
         <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 text-center">
-            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl font-800 italic">0</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Hoy</p></div>
-            <div class="card-admin p-4 bg-black text-white"><p id="ingresos-hoy" class="text-2xl md:text-4xl font-800 italic">0€</p><p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja</p></div>
+            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl font-800 italic">0</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Citas Hoy</p></div>
+            <div class="card-admin p-4 bg-black text-white"><p id="ingresos-hoy" class="text-2xl md:text-4xl font-800 italic">0€</p><p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja Hoy</p></div>
             <div class="card-admin p-4 border-dashed"><p id="proxima-cita" class="text-2xl md:text-4xl font-800 italic underline">--</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Siguiente</p></div>
         </div>
 
@@ -43,7 +43,7 @@
             <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="px-8 py-4 text-[11px] font-bold uppercase">Equipo</button>
         </nav>
 
-        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Comunicando con base de datos...</div>
+        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Cargando...</div>
 
         <section id="section-citas" class="fade-in">
             <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
@@ -55,7 +55,7 @@
                 
                 <div id="rango-pasados" class="hidden flex flex-wrap gap-2 items-center bg-gray-100 p-2 border border-gray-200 w-full md:w-auto md:ml-auto">
                     <input type="date" id="fecha-desde" class="flex-1 md:flex-none bg-transparent border-none text-[10px] font-bold min-w-[110px]">
-                    <span>al</span>
+                    <span class="lowercase">al</span>
                     <input type="date" id="fecha-hasta" class="flex-1 md:flex-none bg-transparent border-none text-[10px] font-bold min-w-[110px]">
                     <button onclick="renderizarCitas()" class="w-full md:w-auto bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
                 </div>
@@ -70,23 +70,23 @@
         <section id="section-calendario" class="hidden fade-in">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="card-admin p-6">
-                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Nueva Restricción</h4>
+                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Agenda</h4>
                     <div class="space-y-6">
                         <div>
                             <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label>
                             <select id="cierre-barbero" class="w-full py-2 font-bold italic"></select>
                         </div>
                         <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día seleccionado</label>
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día del cierre</label>
                             <input type="date" id="cierre-fecha" class="w-full py-2">
                         </div>
                         <div class="space-y-2">
-                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
-                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
-                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Día Completo</button>
+                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
+                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
+                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el Día</button>
                             
                             <div class="pt-4 border-t border-dashed border-gray-300">
-                                <p class="text-[8px] uppercase text-gray-400 mb-2">Intervalo específico:</p>
+                                <p class="text-[8px] uppercase text-gray-400 mb-2">Franja Específica:</p>
                                 <div class="flex items-center gap-2">
                                     <select id="cierre-desde" class="flex-1 text-[10px] font-bold"></select>
                                     <span class="text-[9px]">a</span>
@@ -110,7 +110,7 @@
                     <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Añadir Staff</h4>
                     <div class="flex flex-col md:flex-row gap-4">
                         <input type="text" id="new-barber-name" placeholder="Nombre del barbero" class="flex-1 py-2 text-sm uppercase font-bold">
-                        <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Guardar</button>
+                        <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir</button>
                     </div>
                 </div>
                 <div id="lista-barberos" class="space-y-3"></div>
@@ -135,7 +135,7 @@
                 document.getElementById('cierre-fecha').value = hoy;
                 generarIntervalos();
                 cargarAgenda();
-            } else document.body.innerHTML = "No autorizado";
+            } else document.body.innerHTML = "Acceso Denegado";
         };
 
         function generarIntervalos() {
@@ -160,7 +160,7 @@
                 renderizarCitas();
                 renderizarCalendario();
                 renderizarEquipo();
-            } catch (e) { alert("Error de conexión"); }
+            } catch (e) { alert("Error al sincronizar datos."); }
             document.getElementById('loading').classList.add('hidden');
         }
 
@@ -182,7 +182,6 @@
         function renderizarCitas() {
             const hoyStr = new Date().toISOString().split('T')[0];
             const validas = todasLasCitas.filter(c => !c[1].includes("CANCELADA"));
-            
             const hoyV = validas.filter(c => c[5] === hoyStr);
             let caja = 0; hoyV.forEach(c => caja += (precios[c[4]] || 0));
             document.getElementById('total-citas').innerText = hoyV.length;
@@ -196,7 +195,6 @@
                 const h = document.getElementById('fecha-hasta').value;
                 filtered = validas.filter(c => c[5] >= d && c[5] <= h);
             }
-            
             filtered.sort((a,b) => a[5] === b[5] ? a[6].localeCompare(b[6]) : a[5].localeCompare(b[5]));
 
             document.getElementById('lista-citas').innerHTML = filtered.length ? filtered.map(c => `
@@ -213,59 +211,70 @@
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </td>
-                </tr>`).join('') : `<tr><td class="p-10 text-center text-[10px] text-gray-400 uppercase">Sin citas</td></tr>`;
+                </tr>`).join('') : `<tr><td class="p-10 text-center text-[10px] text-gray-400 uppercase">Sin servicios registrados</td></tr>`;
         }
 
+        // --- CORRECCIÓN DEFINITIVA DE VISUALIZACIÓN DE FECHA ---
         function renderizarCalendario() {
             const bSelector = document.getElementById('cierre-barbero');
             bSelector.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
 
             const hoy = new Date().toISOString().split('T')[0];
-            const activos = todosLosCierres.filter(c => c[0] >= hoy);
             
-            document.getElementById('lista-cierres').innerHTML = activos.length ? activos.map(c => `
+            document.getElementById('lista-cierres').innerHTML = todosLosCierres.filter(c => {
+                const f = c[0].includes(' ') ? c[0].split(' ')[0] : c[0].split('T')[0];
+                return f >= hoy;
+            }).map(c => {
+                // Limpiamos la fecha para que NUNCA salga el 1:00:00
+                const fechaLimpia = c[0].includes(' ') ? c[0].split(' ')[0] : c[0].split('T')[0];
+                
+                return `
                 <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black fade-in">
                     <div>
                         <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase">${c[0].split('T')[0]}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase">${fechaLimpia}</p>
                         <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold">${c[4]}</p>
                     </div>
-                    <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2 hover:bg-red-50">✕</button>
-                </div>`).join('') : `<p class="text-[10px] text-gray-400 uppercase p-4 italic">No hay cierres próximos</p>`;
+                    <button onclick="borrarCierre('${fechaLimpia}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2 hover:bg-red-50">✕</button>
+                </div>`;
+            }).join('') || `<p class="text-[10px] text-gray-400 uppercase p-4 italic">No hay bloqueos activos</p>`;
         }
 
-        // --- CORRECCIÓN CONFIRMACIÓN Y FORMATO DE FECHA ---
+        // --- CORRECCIÓN DEFINITIVA DE ENVÍO DE FECHA ---
         async function intentarGuardarBloqueo(tipo) {
             const barber = document.getElementById('cierre-barbero').value;
-            const fechaRaw = document.getElementById('cierre-fecha').value;
+            const inputFecha = document.getElementById('cierre-fecha').value;
             let tipoFinal = tipo;
 
-            if(!fechaRaw) return alert("Selecciona un día");
+            if(!inputFecha) return alert("Selecciona una fecha.");
             
-            // Forzar solo el string de fecha para evitar desfases de horas en Sheets
-            const fecha = fechaRaw.split('T')[0];
+            // Forzamos el formato YYYY-MM-DD sin nada más
+            const fechaEnvio = inputFecha.split('T')[0];
 
             if(tipo === 'Personalizado') {
                 const d = document.getElementById('cierre-desde').value;
                 const h = document.getElementById('cierre-hasta').value;
-                if(d >= h) return alert("Hora inválida");
+                if(d >= h) return alert("Hora inválida.");
                 tipoFinal = `${d} a ${h}`;
             }
 
-            // RESTRICCIÓN DUPLICADOS
-            const existe = todosLosCierres.find(c => c[0].split('T')[0] === fecha && c[1] === barber && c[4] === tipoFinal);
-            if(existe) return alert(`Ya existe un bloqueo de tipo "${tipoFinal}" para ${barber} este día.`);
+            const existe = todosLosCierres.find(c => {
+                const f = c[0].includes(' ') ? c[0].split(' ')[0] : c[0].split('T')[0];
+                return f === fechaEnvio && c[1] === barber && c[4] === tipoFinal;
+            });
 
-            // CONFIRMACIÓN SIEMPRE REQUERIDA
-            if(!confirm(`¿ESTÁS SEGURO? Vas a bloquear la agenda de ${barber} para el día ${fecha} (${tipoFinal}).`)) return;
+            if(existe) return alert(`Ya existe un bloqueo para ${barber} el día ${fechaEnvio}.`);
 
-            const payload = { action: 'saveClosure', barbero: barber, fecha: fecha, tipo: tipoFinal };
+            // Confirmación obligatoria
+            if(!confirm(`¿BLOQUEAR AGENDA?\nBarbero: ${barber}\nFecha: ${fechaEnvio}\nTipo: ${tipoFinal}`)) return;
+
+            const payload = { action: 'saveClosure', barbero: barber, fecha: fechaEnvio, tipo: tipoFinal };
             
             document.getElementById('loading').classList.remove('hidden');
             try {
                 await fetch(urlScript, { method: 'POST', body: JSON.stringify(payload) });
-                await cargarAgenda(); // Refresco inmediato del front
-            } catch (e) { alert("Error al guardar"); }
+                await cargarAgenda();
+            } catch (e) { alert("Error al guardar bloqueo."); }
         }
 
         function renderizarEquipo() {
@@ -289,21 +298,21 @@
         }
 
         async function borrarBarbero(nombre) {
-            if(!confirm(`¿ELIMINAR A ${nombre}?`)) return;
+            if(!confirm(`¿Eliminar a ${nombre} del equipo?`)) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre }) });
             cargarAgenda();
         }
 
         async function cancelarCita(id) { 
-            if(!confirm("¿Anular cita?")) return; 
+            if(!confirm("¿Anular esta cita definitivamente?")) return; 
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) }); 
             cargarAgenda(); 
         }
 
         async function borrarCierre(fecha, barbero, tipo) {
-            if(!confirm(`¿Reabrir horario?`)) return;
+            if(!confirm(`¿Reabrir agenda para ${barbero} el día ${fecha}?`)) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha, barbero, tipo }) });
             cargarAgenda();
