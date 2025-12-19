@@ -139,4 +139,192 @@
             if(pass === "502admin") {
                 const hoy = new Date().toISOString().split('T')[0];
                 document.getElementById('fecha-desde').value = hoy;
-                document
+                document.getElementById('fecha-hasta').value = hoy;
+                document.getElementById('cierre-fecha').value = hoy;
+                
+                const cache = localStorage.getItem('barber502Cache');
+                if(cache) { procesarDatos(JSON.parse(cache)); }
+                cargarAgenda(false);
+            } else document.body.innerHTML = "Denegado";
+        };
+
+        function normalizeDate(dateStr) {
+            if (!dateStr) return "";
+            let d, m, y;
+            if (dateStr.includes('/')) {
+                [d, m, y] = dateStr.split(' ')[0].split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+            return dateStr.split('T')[0];
+        }
+
+        async function cargarAgenda(showLoading = true) {
+            if(showLoading) document.getElementById('loading').classList.remove('hidden');
+            try {
+                const res = await fetch(`${urlScript}?action=getAppointments`);
+                const data = await res.json();
+                localStorage.setItem('barber502Cache', JSON.stringify(data));
+                procesarDatos(data);
+                document.getElementById('last-update').innerText = "VISTO: " + new Date().toLocaleTimeString();
+            } catch (e) { console.error(e); }
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function procesarDatos(data) {
+            todasLasCitas = data.citas || [];
+            todosLosBarberos = data.barberos || [];
+            todosLosCierres = data.cierres || [];
+            renderizarTodo();
+        }
+
+        function renderizarTodo() {
+            renderizarCitas();
+            renderizarCalendario();
+            renderizarEquipo();
+        }
+
+        function switchMainTab(tab) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById(`main-tab-${tab}`).classList.add('tab-active');
+        }
+
+        function cambiarFiltro(f) {
+            filtroCitas = f;
+            document.querySelectorAll('[id^="subtab-"]').forEach(b => b.classList.remove('subtab-active'));
+            document.getElementById('subtab-' + f).classList.add('subtab-active');
+            document.getElementById('rango-pasados').classList.toggle('hidden', f !== 'pasado');
+            renderizarCitas();
+        }
+
+        function verFicha(nombre, notas) {
+            const n = notas && notas !== "undefined" ? notas : "Sin notas técnicas registradas.";
+            alert(`CLIENTE: ${nombre}\n\nNOTAS TÉCNICAS:\n${n}`);
+        }
+
+        function abrirWhatsApp(telefono) {
+            const limpio = String(telefono).replace(/\D/g, '');
+            const prefijo = limpio.startsWith('34') ? limpio : '34' + limpio;
+            window.open(`https://wa.me/${prefijo}`, '_blank');
+        }
+
+        function editarCita(id) {
+            // Aquí puedes redirigir al evento de Google Calendar o abrir un modal de edición
+            // Por defecto, abrimos el link de edición si existiera o el ID
+            alert("Redirigiendo a edición de cita ID: " + id);
+            // window.open('https://calendar.google.com/calendar/r/eventedit/' + id, '_blank');
+        }
+
+        function renderizarCitas() {
+            const hoyStr = new Date().toISOString().split('T')[0];
+            const validas = todasLasCitas.filter(c => !c[1].includes("CANCELADA"));
+            
+            let filtered = [];
+            if(filtroCitas === 'hoy') filtered = validas.filter(c => normalizeDate(c[5]) === hoyStr);
+            else if(filtroCitas === 'futuro') filtered = validas.filter(c => normalizeDate(c[5]) > hoyStr);
+            else if(filtroCitas === 'pasado') {
+                const d = document.getElementById('fecha-desde').value;
+                const h = document.getElementById('fecha-hasta').value;
+                filtered = validas.filter(c => {
+                    const fc = normalizeDate(c[5]);
+                    return fc >= d && fc <= h;
+                });
+            }
+            
+            filtered.sort((a,b) => normalizeDate(a[5]) === normalizeDate(b[5]) ? a[6].localeCompare(b[6]) : normalizeDate(a[5]).localeCompare(normalizeDate(b[5])));
+
+            document.getElementById('total-citas').innerText = validas.filter(c => normalizeDate(c[5]) === hoyStr).length;
+
+            document.getElementById('lista-citas').innerHTML = filtered.map(c => {
+                const notas = c[4] ? c[4].replace(/'/g, "\\'") : "";
+                return `
+                <tr class="hover:bg-gray-50 transition-all border-b border-gray-100">
+                    <td class="p-4 font-800 text-xl italic w-24">${c[6]}</td>
+                    <td class="p-4">
+                        <button onclick="verFicha('${c[1]}', '${notas}')" class="text-[11px] font-800 uppercase hover:underline text-left block">
+                            ${c[1]}
+                        </button>
+                        <span class="text-[9px] text-gray-400 font-bold uppercase">${c[5]} · ${c[8] || 'Óscar'}</span>
+                    </td>
+                    <td class="p-4 text-right space-x-1">
+                        <button onclick="abrirWhatsApp('${c[2]}')" class="inline-block border border-green-600 text-green-600 p-1 px-2 text-[9px] font-bold hover:bg-green-600 hover:text-white transition-all">WA</button>
+                        <button onclick="editarCita('${c[7]}')" class="inline-block border border-black p-1 px-2 text-[9px] font-bold hover:bg-black hover:text-white transition-all uppercase">Edit</button>
+                        <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 p-1 px-2 hover:bg-red-500 hover:text-white transition-all">✕</button>
+                    </td>
+                </tr>`}).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin citas para mostrar</td></tr>`;
+        }
+
+        function renderizarCalendario() {
+            const sel = document.getElementById('cierre-barbero');
+            sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
+            const cierres = [...todosLosCierres].sort((a,b) => normalizeDate(a[0]).localeCompare(normalizeDate(b[0])));
+
+            document.getElementById('lista-cierres').innerHTML = cierres.map(c => {
+                const fShow = c[0].split(' ')[0];
+                return `
+                <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black shadow-sm">
+                    <div>
+                        <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase">${fShow}</p>
+                        <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold italic tracking-widest">${c[4]}</p>
+                    </div>
+                    <button onclick="borrarCierre('${fShow}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2 hover:bg-red-50">✕</button>
+                </div>`}).join('') || `<p class="p-4 text-xs text-gray-400 uppercase">No hay bloqueos activos</p>`;
+        }
+
+        function renderizarEquipo() {
+            document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
+                const nombre = b[0].toLowerCase();
+                const esOscar = nombre.includes("oscar") || nombre.includes("óscar");
+                return `
+                <div class="p-4 bg-white border border-black flex justify-between items-center shadow-sm">
+                    <span class="font-800 uppercase text-xs italic">${b[0]}</span>
+                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase tracking-widest border border-gray-100 px-2 py-1">INAMOVIBLE (Fundador)</span>`}
+                </div>`;
+            }).join('');
+        }
+
+        async function intentarGuardarBloqueo(tipo) {
+            const barber = document.getElementById('cierre-barbero').value;
+            const fecha = document.getElementById('cierre-fecha').value;
+            if(!fecha) return alert("Selecciona una fecha válida");
+            if(!confirm(`¿Confirmas bloquear la agenda de ${barber} el día ${fecha} (${tipo})?`)) return;
+
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClosure', barbero: barber, fecha, tipo }) });
+            cargarAgenda();
+        }
+
+        async function nuevoBarbero() {
+            const n = document.getElementById('new-barber-name').value;
+            if(!n) return;
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveBarber', nombre: n }) });
+            document.getElementById('new-barber-name').value = '';
+            cargarAgenda();
+        }
+
+        async function borrarBarbero(n) {
+            if(!confirm(`¿Eliminar definitivamente a ${n}?`)) return;
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre: n }) });
+            cargarAgenda();
+        }
+
+        async function cancelarCita(id) {
+            if(!confirm("¿Anular esta cita? El cliente recibirá notificación de cancelación.")) return;
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
+            cargarAgenda();
+        }
+
+        async function borrarCierre(f, b, t) {
+            if(!confirm("¿Reabrir esta jornada?")) return;
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha: f, barbero: b, tipo: t }) });
+            cargarAgenda();
+        }
+    </script>
+</body>
+</html>
