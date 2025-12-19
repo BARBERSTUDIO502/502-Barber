@@ -9,10 +9,28 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
-        .tab-active { background: #000 !important; color: #fff !important; font-weight: 800; border-color: #000; }
+        
+        /* DISEÑO DE PESTAÑAS MEJORADO */
+        .tab-btn { 
+            border: 1px solid #e5e7eb; 
+            border-bottom: 1px solid black; 
+            background: #f3f4f6; 
+            color: #9ca3af; 
+            transition: all 0.2s; 
+            position: relative;
+            top: 1px;
+        }
+        .tab-active { 
+            background: white !important; 
+            color: black !important; 
+            font-weight: 800; 
+            border: 1px solid black !important; 
+            border-bottom: 2px solid white !important; /* "Borra" la línea de abajo */
+            z-index: 10;
+        }
+        
         .subtab-active { border-bottom: 2px solid black; color: black; font-weight: 800; }
         input, select, textarea { border-bottom: 1px solid black !important; outline: none; background: transparent; }
-        .modal-overlay { background: rgba(0,0,0,0.8); z-index: 50; }
         .fade-in { animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -24,97 +42,85 @@
         <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-2 border-black pb-8 px-2 gap-4">
             <div>
                 <h1 class="text-4xl md:text-6xl font-800 tracking-tighter uppercase leading-none italic">502 BARBER STUDIO</h1>
-                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2">ADMINISTRACIÓN CENTRAL</p>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2">GESTIÓN PROFESIONAL</p>
             </div>
             <div class="flex flex-col items-end gap-1">
-                <button onclick="cargarAgenda(true)" class="flex items-center gap-2 px-6 py-2 bg-black text-white font-bold text-[10px] uppercase hover:bg-gray-800 transition-all shadow-lg">
-                    Sincronizar Datos
+                <button onclick="cargarAgenda(true)" class="bg-black text-white px-6 py-2 font-bold text-[10px] uppercase hover:bg-gray-800 transition-all shadow-md">
+                    Sincronizar
                 </button>
-                <span id="last-update" class="text-[8px] text-gray-400 font-bold uppercase tracking-widest"></span>
+                <span id="last-update" class="text-[8px] text-gray-400 font-bold uppercase"></span>
             </div>
         </header>
 
         <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 text-center">
-            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl font-800 italic">0</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Citas Hoy</p></div>
-            <div class="card-admin p-4 bg-black text-white"><p id="ingresos-hoy" class="text-2xl md:text-4xl font-800 italic">0€</p><p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja Hoy</p></div>
-            <div class="card-admin p-4 border-dashed"><p id="proxima-cita" class="text-2xl md:text-4xl font-800 italic underline">--</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Siguiente</p></div>
+            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl font-800">0</p><p class="text-[8px] uppercase text-gray-400">Hoy</p></div>
+            <div class="card-admin p-4 bg-black text-white"><p id="ingresos-hoy" class="text-2xl md:text-4xl font-800 italic">0€</p><p class="text-[8px] uppercase text-gray-500">Caja</p></div>
+            <div class="card-admin p-4 border-dashed"><p id="proxima-cita" class="text-2xl md:text-4xl font-800 italic underline">--</p><p class="text-[8px] uppercase text-gray-400">Siguiente</p></div>
         </div>
 
-        <nav class="flex border-b border-black mb-6 overflow-x-auto no-scrollbar">
-            <button id="main-tab-citas" onclick="switchMainTab('citas')" class="px-8 py-4 text-[11px] font-bold uppercase tab-active">Citas</button>
-            <button id="main-tab-calendario" onclick="switchMainTab('calendario')" class="px-8 py-4 text-[11px] font-bold uppercase border-x border-black">Calendario</button>
-            <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="px-8 py-4 text-[11px] font-bold uppercase">Equipo</button>
+        <nav class="flex overflow-x-auto no-scrollbar mb-[-1px]">
+            <button id="main-tab-citas" onclick="switchMainTab('citas')" class="tab-btn px-8 py-4 text-[11px] font-bold uppercase tracking-widest tab-active">Citas</button>
+            <button id="main-tab-calendario" onclick="switchMainTab('calendario')" class="tab-btn px-8 py-4 text-[11px] font-bold uppercase tracking-widest">Calendario</button>
+            <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="tab-btn px-8 py-4 text-[11px] font-bold uppercase tracking-widest">Equipo</button>
         </nav>
 
-        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse font-bold">Comunicando con servidor...</div>
+        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold">Comunicando...</div>
 
-        <section id="section-citas" class="fade-in">
+        <section id="section-citas" class="fade-in bg-white border border-black p-4">
             <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 <div class="flex gap-4">
                     <button id="subtab-hoy" onclick="cambiarFiltro('hoy')" class="subtab-active pb-1">Hoy</button>
                     <button id="subtab-futuro" onclick="cambiarFiltro('futuro')" class="pb-1">Próximos</button>
                     <button id="subtab-pasado" onclick="cambiarFiltro('pasado')" class="pb-1">Pasados</button>
                 </div>
-                
-                <div id="rango-pasados" class="hidden flex flex-wrap gap-2 items-center bg-gray-100 p-2 border border-gray-200 w-full md:w-auto md:ml-auto">
-                    <input type="date" id="fecha-desde" class="flex-1 md:flex-none bg-transparent border-none text-[10px] font-bold min-w-[110px]">
-                    <span class="lowercase">a</span>
-                    <input type="date" id="fecha-hasta" class="flex-1 md:flex-none bg-transparent border-none text-[10px] font-bold min-w-[110px]">
-                    <button onclick="renderizarCitas()" class="w-full md:w-auto bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
+                <div id="rango-pasados" class="hidden flex flex-wrap gap-2 items-center bg-gray-50 p-2 border ml-auto">
+                    <input type="date" id="fecha-desde" class="text-[10px] font-bold">
+                    <span>a</span>
+                    <input type="date" id="fecha-hasta" class="text-[10px] font-bold">
+                    <button onclick="renderizarCitas()" class="bg-black text-white px-4 py-2 font-bold uppercase">Filtrar</button>
                 </div>
             </div>
-            <div class="bg-white border border-black overflow-hidden shadow-sm">
-                <table class="w-full text-left table-auto">
-                    <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
-                </table>
-            </div>
+            <div class="overflow-hidden"><table class="w-full text-left table-auto"><tbody id="lista-citas" class="divide-y divide-gray-100"></tbody></table></div>
         </section>
 
-        <section id="section-calendario" class="hidden fade-in">
+        <section id="section-calendario" class="hidden fade-in bg-white border border-black p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="card-admin p-6 h-fit">
-                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Agenda</h4>
+                <div class="card-admin p-6 h-fit border-dashed">
+                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2">Marcar Cierre</h4>
                     <div class="space-y-6">
                         <div>
                             <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label>
                             <select id="cierre-barbero" class="w-full py-2 font-bold italic"></select>
                         </div>
                         <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Fecha</label>
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día del cierre</label>
                             <input type="date" id="cierre-fecha" class="w-full py-2">
                         </div>
                         <div class="space-y-2">
-                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
-                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
-                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el Día</button>
-                            
-                            <div class="pt-4 border-t border-dashed border-gray-300">
-                                <p class="text-[8px] uppercase text-gray-400 mb-2">Franja Específica:</p>
-                                <div class="flex items-center gap-2">
-                                    <select id="cierre-desde" class="flex-1 text-[10px] font-bold"></select>
-                                    <span class="text-[9px]">a</span>
-                                    <select id="cierre-hasta" class="flex-1 text-[10px] font-bold"></select>
-                                    <button onclick="intentarGuardarBloqueo('Personalizado')" class="bg-black text-white px-4 py-2 text-[9px] font-bold shadow-sm">OK</button>
-                                </div>
-                            </div>
+                            <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
+                            <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
+                            <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el Día</button>
                         </div>
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400 px-2">Bloqueos Confirmados</h4>
+                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400">Bloqueos Confirmados</h4>
                     <div id="lista-cierres" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
             </div>
         </section>
 
-        <section id="section-equipo" class="hidden fade-in">
+        <section id="section-equipo" class="hidden fade-in bg-white border border-black p-6">
             <div class="max-w-2xl">
                 <div class="card-admin p-8 mb-8 border-dashed">
-                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Miembros Staff</h4>
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <input type="text" id="new-barber-name" placeholder="Nombre del barbero" class="flex-1 py-2 text-sm uppercase font-bold">
+                    <h4 class="text-xs font-800 uppercase mb-4 italic">Alta de Personal</h4>
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <input type="text" id="new-barber-name" placeholder="Nombre completo" class="flex-1 py-2 text-sm uppercase font-bold">
                         <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir</button>
                     </div>
+                    <p class="text-[9px] text-gray-400 font-bold uppercase leading-relaxed italic border-l-2 border-gray-200 pl-4">
+                        * IMPORTANTE: Al añadir un segundo barbero, este aparecerá automáticamente en el front del cliente para pedir citas y comprobar disponibilidad de forma sincronizada.
+                    </p>
                 </div>
                 <div id="lista-barberos" class="space-y-3"></div>
             </div>
@@ -131,54 +137,27 @@
             const pass = prompt("Acceso 502:");
             if(pass === "502admin") {
                 const hoy = new Date().toISOString().split('T')[0];
-                document.getElementById('fecha-desde').max = hoy;
-                document.getElementById('fecha-hasta').max = hoy;
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
                 document.getElementById('cierre-fecha').value = hoy;
-                generarIntervalos();
                 
-                // INTENTO DE CARGAR DESDE CACHÉ LOCAL (Instantáneo)
+                // CARGAR DESDE CACHÉ
                 const cache = localStorage.getItem('barber502Cache');
-                if(cache) {
-                    const data = JSON.parse(cache);
-                    procesarDatos(data);
-                    document.getElementById('last-update').innerText = "Visto (Modo Offline)";
-                }
-                
-                // CARGA REAL EN SEGUNDO PLANO
+                if(cache) { procesarDatos(JSON.parse(cache)); }
                 cargarAgenda(false);
             } else document.body.innerHTML = "Acceso Denegado";
         };
-
-        function generarIntervalos() {
-            const horas = [];
-            for(let h=10; h<=20; h++) {
-                horas.push(`${h}:00`, `${h}:30`);
-            }
-            ['cierre-desde', 'cierre-hasta'].forEach(id => {
-                const select = document.getElementById(id);
-                if(select) select.innerHTML = horas.map(h => `<option value="${h}">${h}</option>`).join('');
-            });
-            if(document.getElementById('cierre-hasta')) document.getElementById('cierre-hasta').value = "20:30";
-        }
 
         async function cargarAgenda(showLoading = true) {
             if(showLoading) document.getElementById('loading').classList.remove('hidden');
             try {
                 const res = await fetch(`${urlScript}?action=getAppointments`);
                 const data = await res.json();
-                
-                // Guardar en Caché para la próxima vez
                 localStorage.setItem('barber502Cache', JSON.stringify(data));
-                
                 procesarDatos(data);
-                document.getElementById('last-update').innerText = "Actualizado: " + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            } catch (e) { 
-                console.error("Error de sincronización:", e);
-            } finally {
-                if(showLoading) document.getElementById('loading').classList.add('hidden');
-            }
+                document.getElementById('last-update').innerText = "Actualizado: " + new Date().toLocaleTimeString();
+            } catch (e) { console.error(e); }
+            document.getElementById('loading').classList.add('hidden');
         }
 
         function procesarDatos(data) {
@@ -197,7 +176,7 @@
         function switchMainTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`section-${tab}`).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
             document.getElementById(`main-tab-${tab}`).classList.add('tab-active');
         }
 
@@ -212,143 +191,94 @@
         function renderizarCitas() {
             const hoyStr = new Date().toISOString().split('T')[0];
             const validas = todasLasCitas.filter(c => !c[1].includes("CANCELADA"));
-            const hoyV = validas.filter(c => {
-                const f = c[5].includes('T') ? c[5].split('T')[0] : c[5].split(' ')[0];
-                return f === hoyStr;
-            });
             
-            let caja = 0; hoyV.forEach(c => caja += (precios[c[4]] || 0));
-            document.getElementById('total-citas').innerText = hoyV.length;
-            document.getElementById('ingresos-hoy').innerText = caja + "€";
-
             let filtered = [];
-            if(filtroCitas === 'hoy') filtered = hoyV;
-            else if(filtroCitas === 'futuro') filtered = validas.filter(c => {
-                const f = c[5].includes('T') ? c[5].split('T')[0] : c[5].split(' ')[0];
-                return f > hoyStr;
-            });
+            if(filtroCitas === 'hoy') filtered = validas.filter(c => c[5] === hoyStr);
+            else if(filtroCitas === 'futuro') filtered = validas.filter(c => c[5] > hoyStr);
             else if(filtroCitas === 'pasado') {
                 const d = document.getElementById('fecha-desde').value;
                 const h = document.getElementById('fecha-hasta').value;
-                filtered = validas.filter(c => {
-                    const f = c[5].includes('T') ? c[5].split('T')[0] : c[5].split(' ')[0];
-                    return f >= d && f <= h;
-                });
+                filtered = validas.filter(c => c[5] >= d && c[5] <= h);
             }
             filtered.sort((a,b) => a[5] === b[5] ? a[6].localeCompare(b[6]) : a[5].localeCompare(b[5]));
 
-            document.getElementById('lista-citas').innerHTML = filtered.length ? filtered.map(c => {
-                const fShow = c[5].includes('T') ? c[5].split('T')[0] : c[5].split(' ')[0];
-                return `
-                <tr class="hover:bg-gray-50 transition-all">
+            document.getElementById('lista-citas').innerHTML = filtered.map(c => `
+                <tr class="hover:bg-gray-50">
                     <td class="p-4 font-800 text-xl italic w-24">${c[6]}</td>
-                    <td class="p-4">
-                        <div class="flex flex-col">
-                            <span class="text-[11px] font-800 uppercase">${c[1]}</span>
-                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${fShow} · ${c[8] || 'Óscar'}</span>
-                        </div>
-                    </td>
-                    <td class="p-4 text-right">
-                        <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 p-2 hover:bg-red-500 hover:text-white transition-all">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </td>
-                </tr>`}).join('') : `<tr><td class="p-10 text-center text-[10px] text-gray-400 uppercase">Sin citas</td></tr>`;
+                    <td class="p-4"><span class="text-[11px] font-800 uppercase">${c[1]}</span><br><span class="text-[9px] text-gray-400 font-bold uppercase">${c[5]} · ${c[8] || 'Óscar Mejicanos'}</span></td>
+                    <td class="p-4 text-right"><button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 p-1 hover:bg-red-500 transition-all">✕</button></td>
+                </tr>`).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin registros</td></tr>`;
         }
 
+        // ORDEN INVERSO SOLICITADO: Del más lejano al más cercano hoy
         function renderizarCalendario() {
-            const bSelector = document.getElementById('cierre-barbero');
-            if(bSelector) bSelector.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
+            const sel = document.getElementById('cierre-barbero');
+            sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
 
-            // Mostramos TODOS los cierres de la BBDD ordenados por fecha descendente
-            const cierresOrdenados = [...todosLosCierres].sort((a, b) => b[0].localeCompare(a[0]));
+            const hoy = new Date().toISOString().split('T')[0];
+            const cierres = [...todosLosCierres].filter(c => c[0] >= hoy);
+            
+            // Orden: más lejano primero, hoy al final (Inversa)
+            cierres.sort((a,b) => b[0].localeCompare(a[0]));
 
-            const listaHTML = cierresOrdenados.map(c => {
-                const fLimpia = c[0].split(/[ T]/)[0];
-                return `
-                <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black fade-in">
-                    <div>
-                        <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
-                        <p class="text-[9px] font-bold text-gray-400 uppercase">${fLimpia}</p>
-                        <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold">${c[4]}</p>
-                    </div>
-                    <button onclick="borrarCierre('${fLimpia}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2 hover:bg-red-50">✕</button>
-                </div>`;
-            }).join('');
-
-            document.getElementById('lista-cierres').innerHTML = listaHTML || `<p class="text-[10px] text-gray-400 uppercase p-4 italic">No hay bloqueos registrados</p>`;
-        }
-
-        async function intentarGuardarBloqueo(tipo) {
-            const barber = document.getElementById('cierre-barbero').value;
-            const inputFecha = document.getElementById('cierre-fecha').value;
-            let tipoFinal = tipo;
-
-            if(!inputFecha) return alert("Indica una fecha.");
-            const fechaEnvio = inputFecha.split('T')[0]; // Envío estricto YYYY-MM-DD
-
-            if(tipo === 'Personalizado') {
-                const d = document.getElementById('cierre-desde').value;
-                const h = document.getElementById('cierre-hasta').value;
-                if(d >= h) return alert("Hora incorrecta.");
-                tipoFinal = `${d} a ${h}`;
-            }
-
-            const cierresDia = todosLosCierres.filter(c => c[0].split(/[ T]/)[0] === fechaEnvio && c[1] === barber);
-            if(cierresDia.some(c => c[4] === "Día Completo")) return alert(`Ya existe bloqueo total.`);
-            if(cierresDia.some(c => c[4] === tipoFinal)) return alert(`Ya existe ese bloqueo.`);
-
-            if(!confirm(`¿CONFIRMAR BLOQUEO?\n${barber} - ${fechaEnvio}\nTipo: ${tipoFinal}`)) return;
-
-            document.getElementById('loading').classList.remove('hidden');
-            try {
-                await fetch(urlScript, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'saveClosure', barbero: barber, fecha: fechaEnvio, tipo: tipoFinal }) 
-                });
-                await cargarAgenda(true);
-            } catch (e) { alert("Error al guardar."); }
+            document.getElementById('lista-cierres').innerHTML = cierres.map(c => `
+                <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black">
+                    <div><p class="text-[10px] font-800 uppercase italic">${c[1]}</p><p class="text-[9px] font-bold text-gray-400 uppercase">${c[0]}</p><p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold">${c[4]}</p></div>
+                    <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2">✕</button>
+                </div>`).join('') || `<p class="p-4 text-xs text-gray-400 uppercase">Sin bloqueos confirmados</p>`;
         }
 
         function renderizarEquipo() {
             document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
-                const esOscar = b[0].toLowerCase().includes("oscar");
+                const nombre = b[0].toLowerCase();
+                const esOscar = nombre.includes("oscar") || nombre.includes("óscar");
                 return `
-                <div class="p-4 bg-white border border-black flex justify-between items-center fade-in">
+                <div class="p-4 bg-white border border-black flex justify-between items-center">
                     <span class="font-800 uppercase text-xs italic">${b[0]}</span>
-                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white transition-all uppercase">Borrar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase">Fijo</span>`}
+                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Borrar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase italic">Propietario</span>`}
                 </div>`;
             }).join('');
         }
 
+        async function intentarGuardarBloqueo(tipo) {
+            const barber = document.getElementById('cierre-barbero').value;
+            const fecha = document.getElementById('cierre-fecha').value;
+            if(!fecha) return alert("Elige fecha");
+            if(!confirm(`¿Bloquear a ${barber} el día ${fecha} (${tipo})?`)) return;
+
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClosure', barbero: barber, fecha, tipo }) });
+            cargarAgenda();
+        }
+
         async function nuevoBarbero() {
             const n = document.getElementById('new-barber-name').value;
-            if(!n || !confirm(`¿Añadir a ${n}?`)) return;
+            if(!n) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveBarber', nombre: n }) });
             document.getElementById('new-barber-name').value = '';
-            await cargarAgenda(true);
+            cargarAgenda();
         }
 
-        async function borrarBarbero(nombre) {
-            if(!confirm(`¿Eliminar a ${nombre}?`)) return;
+        async function borrarBarbero(n) {
+            if(!confirm("¿Borrar definitivamente?")) return;
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre }) });
-            await cargarAgenda(true);
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre: n }) });
+            cargarAgenda();
         }
 
-        async function cancelarCita(id) { 
-            if(!confirm("¿Cancelar cita definitivamente?")) return; 
+        async function cancelarCita(id) {
+            if(!confirm("¿Anular cita?")) return;
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) }); 
-            await cargarAgenda(true); 
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
+            cargarAgenda();
         }
 
-        async function borrarCierre(fecha, barbero, tipo) {
-            if(!confirm(`¿Reabrir agenda?`)) return;
+        async function borrarCierre(f, b, t) {
+            if(!confirm("¿Reabrir agenda?")) return;
             document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha, barbero, tipo }) });
-            await cargarAgenda(true);
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha: f, barbero: b, tipo: t }) });
+            cargarAgenda();
         }
     </script>
 </body>
