@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <title>502 Barber Studio - Admin</title>
+    <title>502 Barber Studio - Admin v2</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
@@ -24,37 +24,11 @@
         <div class="bg-white w-full max-w-sm p-8 shadow-2xl border border-black">
             <h3 class="text-xl font-800 uppercase tracking-tighter mb-6 italic">Modificar Cita</h3>
             <div class="space-y-6">
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Nueva Fecha</label>
-                    <input type="date" id="edit-fecha" class="w-full py-2">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Nueva Hora</label>
-                    <select id="edit-hora" class="w-full py-2 italic font-bold"></select>
-                </div>
+                <div><label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Nueva Fecha</label><input type="date" id="edit-fecha" class="w-full py-2"></div>
+                <div><label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Nueva Hora</label><select id="edit-hora" class="w-full py-2 italic font-bold"></select></div>
                 <div class="flex gap-2 pt-4">
                     <button onclick="cerrarEditor()" class="flex-1 py-3 text-[10px] uppercase font-bold border border-black hover:bg-gray-100">Cancelar</button>
-                    <button onclick="guardarCambios()" class="flex-1 py-3 text-[10px] uppercase font-bold bg-black text-white shadow-lg">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-ficha" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md p-8 shadow-2xl border border-black">
-            <div class="flex justify-between items-start mb-6">
-                <h3 class="text-xl font-800 uppercase tracking-tighter italic">Ficha del Cliente</h3>
-                <span id="ficha-email" class="text-[9px] text-gray-400 font-bold uppercase"></span>
-            </div>
-            <div class="space-y-6">
-                <div>
-                    <p id="ficha-nombre" class="text-lg font-bold uppercase mb-4 border-b border-gray-100 pb-2"></p>
-                    <label class="text-[10px] uppercase font-bold text-gray-400 block mb-2">Notas Técnicas</label>
-                    <textarea id="ficha-notas" rows="5" class="w-full p-3 bg-gray-50 border-none text-sm"></textarea>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="cerrarFicha()" class="flex-1 py-3 text-[10px] uppercase font-bold border border-black">Cerrar</button>
-                    <button onclick="guardarNotas()" class="flex-1 py-3 text-[10px] uppercase font-bold bg-black text-white">Guardar Notas</button>
+                    <button onclick="guardarCambios()" class="flex-1 py-3 text-[10px] uppercase font-bold bg-black text-white">Guardar</button>
                 </div>
             </div>
         </div>
@@ -66,34 +40,25 @@
                 <h1 class="text-4xl md:text-6xl font-800 tracking-tighter uppercase leading-none">502 BARBER STUDIO</h1>
                 <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-bold mt-2 italic">Dashboard de Administración</p>
             </div>
-            <button onclick="cargarAgenda()" class="flex items-center gap-2 px-4 py-2 border border-black font-bold text-[10px] uppercase hover:bg-gray-50 transition-all">
+            <button onclick="cargarAgenda()" class="flex items-center gap-2 px-4 py-2 border border-black font-bold text-[10px] uppercase hover:bg-gray-50">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                Sincronizar
+                Sincronizar Datos
             </button>
         </header>
 
         <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 font-800 text-center">
-            <div class="card-admin p-4">
-                <p id="total-citas" class="text-2xl md:text-4xl italic">0</p>
-                <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Citas Hoy</p>
-            </div>
-            <div class="card-admin p-4 bg-black text-white shadow-lg">
-                <p id="ingresos-hoy" class="text-2xl md:text-4xl italic">0€</p>
-                <p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja Hoy</p>
-            </div>
-            <div class="card-admin p-4 border-dashed">
-                <p id="proxima-cita" class="text-2xl md:text-4xl italic underline">--</p>
-                <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Siguiente</p>
-            </div>
+            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl italic">0</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Citas Hoy</p></div>
+            <div class="card-admin p-4 bg-black text-white shadow-lg"><p id="ingresos-hoy" class="text-2xl md:text-4xl italic">0€</p><p class="text-[8px] uppercase tracking-widest text-gray-500 mt-1">Caja Hoy</p></div>
+            <div class="card-admin p-4 border-dashed"><p id="proxima-cita" class="text-2xl md:text-4xl italic underline">--</p><p class="text-[8px] uppercase tracking-widest text-gray-400 mt-1">Siguiente</p></div>
         </div>
 
         <nav class="flex border-b border-black mb-6 overflow-x-auto no-scrollbar">
             <button id="main-tab-citas" onclick="switchMainTab('citas')" class="px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] tab-active">Citas</button>
-            <button id="main-tab-calendario" onclick="switchMainTab('calendario')" class="px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] transition-all border-x border-black">Calendario</button>
-            <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] transition-all">Equipo</button>
+            <button id="main-tab-calendario" onclick="switchMainTab('calendario')" class="px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] border-x border-black">Calendario</button>
+            <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em]">Equipo</button>
         </nav>
 
-        <div id="loading" class="hidden p-20 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Procesando cambios...</div>
+        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] tracking-widest text-gray-400 animate-pulse">Sincronizando con el servidor...</div>
 
         <section id="section-citas" class="fade-in">
             <div class="flex items-center gap-6 mb-6 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
@@ -105,28 +70,15 @@
                     <input type="date" id="fecha-desde" class="bg-transparent border-none text-[9px]">
                     <span>al</span>
                     <input type="date" id="fecha-hasta" class="bg-transparent border-none text-[9px]">
-                    <button onclick="renderizarCitas()" class="bg-black text-white px-3 py-1">Ir</button>
+                    <button onclick="renderizarCitas()" class="bg-black text-white px-3 py-1">Filtrar</button>
                 </div>
             </div>
-
-            <div class="bg-white border md:border border-black overflow-hidden shadow-sm">
-                <table class="w-full text-left table-auto">
-                    <thead>
-                        <tr class="bg-gray-50 text-[8px] uppercase tracking-widest border-b border-black font-bold text-gray-500">
-                            <th class="p-4 w-20">Hora</th>
-                            <th class="p-4">Cliente / Barbero</th>
-                            <th class="p-4 hidden md:table-cell">Servicio</th>
-                            <th class="p-4 text-right w-32">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-citas" class="divide-y divide-gray-100"></tbody>
-                </table>
-            </div>
+            <div class="bg-white border border-black overflow-hidden"><table class="w-full text-left table-auto"><tbody id="lista-citas" class="divide-y divide-gray-100"></tbody></table></div>
         </section>
 
         <section id="section-calendario" class="hidden fade-in">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="md:col-span-1 card-admin p-6">
+                <div class="card-admin p-6">
                     <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Agenda</h4>
                     <div class="space-y-6">
                         <div>
@@ -134,29 +86,28 @@
                             <select id="cierre-barbero" class="w-full py-2 font-bold italic"></select>
                         </div>
                         <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día a bloquear</label>
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día del bloqueo</label>
                             <input type="date" id="cierre-fecha" class="w-full py-2">
                         </div>
-                        <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-4">Tipo de bloqueo</label>
-                            <div class="grid grid-cols-1 gap-2">
-                                <button onclick="guardarBloqueo('Mañana')" class="border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
-                                <button onclick="guardarBloqueo('Tarde')" class="border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
-                                <button onclick="guardarBloqueo('Día Completo')" class="border border-black py-3 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el día</button>
-                                <div class="pt-4 border-t border-dashed border-gray-300 mt-2">
-                                    <p class="text-[8px] uppercase text-gray-400 mb-2">Franja específica:</p>
-                                    <div class="flex gap-2">
-                                        <input type="time" id="cierre-desde" class="flex-1 text-[10px]">
-                                        <input type="time" id="cierre-hasta" class="flex-1 text-[10px]">
-                                        <button onclick="guardarBloqueo('Personalizado')" class="bg-black text-white px-3 text-[10px]">OK</button>
-                                    </div>
+                        <div class="space-y-3">
+                            <button onclick="guardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
+                            <button onclick="guardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
+                            <button onclick="guardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Día Completo</button>
+                            
+                            <div class="pt-4 border-t border-dashed border-gray-300">
+                                <p class="text-[8px] uppercase text-gray-400 mb-2">Franja personalizada:</p>
+                                <div class="flex items-center gap-2">
+                                    <select id="cierre-desde" class="flex-1 text-[10px] font-bold"></select>
+                                    <span class="text-[9px]">A</span>
+                                    <select id="cierre-hasta" class="flex-1 text-[10px] font-bold"></select>
+                                    <button onclick="guardarBloqueo('Personalizado')" class="bg-black text-white px-3 py-1.5 text-[9px] font-bold">OK</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400 px-2">Bloqueos Activos</h4>
+                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400 px-2">Bloqueos Confirmados en Base de Datos</h4>
                     <div id="lista-cierres" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -165,56 +116,50 @@
         <section id="section-equipo" class="hidden fade-in">
             <div class="max-w-2xl">
                 <div class="card-admin p-8 mb-8">
-                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Añadir Staff</h4>
+                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Nuevo Barbero</h4>
                     <div class="flex gap-4">
-                        <input type="text" id="new-barber-name" placeholder="Nombre completo" class="flex-1 py-2 text-sm">
-                        <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir Barbero</button>
+                        <input type="text" id="new-barber-name" placeholder="Nombre" class="flex-1 py-2 text-sm uppercase font-bold">
+                        <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir</button>
                     </div>
-                    <p class="text-[8px] text-gray-400 mt-4">Al añadir un barbero, aparecerá automáticamente en el formulario de citas de los clientes.</p>
                 </div>
-
-                <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400 px-2">Miembros del Equipo</h4>
                 <div id="lista-barberos" class="space-y-3"></div>
             </div>
         </section>
-
-        <div class="mt-16 border-t-4 border-black pt-12 mb-20">
-            <h2 class="text-2xl font-800 uppercase tracking-tighter mb-10 italic underline decoration-2 underline-offset-4">Reporte de Negocio</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="border-l-2 border-black pl-6">
-                    <p id="label-mes-anterior" class="text-[9px] uppercase font-800 text-gray-400 mb-2 tracking-widest">Caja (Mes anterior)</p>
-                    <p id="caja-mes-anterior" class="text-5xl font-800 italic tracking-tighter">0€</p>
-                    <p id="conteo-mes-anterior" class="text-[10px] mt-3 font-bold text-gray-600 uppercase tracking-tight">-- servicios totales</p>
-                </div>
-                <div class="border-l-2 border-black pl-6">
-                    <p class="text-[9px] uppercase font-800 text-gray-400 mb-4 tracking-widest">Clientes más fieles</p>
-                    <div id="top-clientes" class="space-y-4"></div>
-                </div>
-                <div class="border-l-2 border-black pl-6">
-                    <p class="text-[9px] uppercase font-800 text-gray-400 mb-4 tracking-widest">Servicios más pedidos</p>
-                    <div id="stats-servicios" class="space-y-3"></div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
-        let todasLasCitas = [], todosLosClientes = [], todosLosBarberos = [], todosLosCierres = [];
+        let todasLasCitas = [], todosLosBarberos = [], todosLosCierres = [];
         let filtroCitas = 'hoy';
-        let citaEditandoId = null;
         const precios = { "Corte y lavado": 13, "Corte + barba": 17, "Arreglo barba": 7 };
 
         window.onload = () => {
-            const pass = prompt("Acceso Administrador 502:");
+            const pass = prompt("Acceso 502:");
             if(pass === "502admin") {
                 const hoy = new Date().toISOString().split('T')[0];
+                // Restricción de fechas pasadas
+                document.getElementById('fecha-desde').max = hoy;
+                document.getElementById('fecha-hasta').max = hoy;
                 document.getElementById('fecha-desde').value = hoy;
                 document.getElementById('fecha-hasta').value = hoy;
                 document.getElementById('cierre-fecha').value = hoy;
+                
+                generarIntervalosHorarios();
                 cargarAgenda();
-            } else document.body.innerHTML = "Acceso denegado";
+            } else document.body.innerHTML = "Denegado";
         };
+
+        function generarIntervalosHorarios() {
+            const horas = [];
+            for(let h=10; h<=20; h++) {
+                horas.push(`${h}:00`, `${h}:30`);
+            }
+            const selects = ['cierre-desde', 'cierre-hasta'];
+            selects.forEach(id => {
+                document.getElementById(id).innerHTML = horas.map(h => `<option value="${h}">${h}</option>`).join('');
+            });
+            document.getElementById('cierre-hasta').value = "20:30";
+        }
 
         async function cargarAgenda() {
             document.getElementById('loading').classList.remove('hidden');
@@ -222,23 +167,19 @@
                 const res = await fetch(`${urlScript}?action=getAppointments`);
                 const data = await res.json();
                 todasLasCitas = data.citas || [];
-                todosLosClientes = data.clientes || [];
                 todosLosBarberos = data.barberos || [];
                 todosLosCierres = data.cierres || [];
                 
                 renderizarCitas();
                 renderizarCalendario();
                 renderizarEquipo();
-                calcularEstadisticas();
-            } catch (e) { alert("Error al sincronizar datos."); }
+            } catch (e) { console.error(e); }
             document.getElementById('loading').classList.add('hidden');
         }
 
-        // --- NAVEGACIÓN ---
         function switchMainTab(tab) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`section-${tab}`).classList.remove('hidden');
-            
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
             document.getElementById(`main-tab-${tab}`).classList.add('tab-active');
         }
@@ -251,18 +192,16 @@
             renderizarCitas();
         }
 
-        // --- RENDER CITAS ---
         function renderizarCitas() {
             const hoyStr = new Date().toISOString().split('T')[0];
             const validas = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
             
-            // Stats de hoy
+            // Dashboard stats
             const hoyV = validas.filter(c => c[5] === hoyStr);
             let cajaHoy = 0; hoyV.forEach(c => cajaHoy += (precios[c[4]] || 0));
             document.getElementById('total-citas').innerText = hoyV.length;
             document.getElementById('ingresos-hoy').innerText = cajaHoy + "€";
 
-            const cuerpo = document.getElementById('lista-citas');
             let filtered = validas;
             if(filtroCitas === 'hoy') filtered = validas.filter(c => c[5] === hoyStr);
             else if(filtroCitas === 'futuro') filtered = validas.filter(c => c[5] > hoyStr);
@@ -273,72 +212,47 @@
             
             filtered.sort((a,b) => (a[5]+a[6] > b[5]+b[6]) ? 1 : -1);
 
-            cuerpo.innerHTML = filtered.map(c => `
-                <tr class="hover:bg-gray-50 transition-all">
-                    <td class="p-4 font-800 text-xl italic">${c[6]}</td>
+            document.getElementById('lista-citas').innerHTML = filtered.map(c => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-4 font-800 text-xl italic w-24">${c[6]}</td>
                     <td class="p-4">
-                        <div class="flex flex-col cursor-pointer group" onclick="abrirFichaCliente('${c[3]}', '${c[1]}')">
-                            <span class="text-[11px] font-800 uppercase group-hover:underline">${c[1]}</span>
-                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${formatearFechaElegante(c[5])} · <span class="text-black italic">${c[8] || 'Óscar'}</span></span>
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-800 uppercase">${c[1]}</span>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">${c[5]} · <span class="text-black italic">${c[8] || 'Óscar'}</span></span>
                         </div>
                     </td>
-                    <td class="p-4 hidden md:table-cell"><span class="text-[8px] bg-gray-100 px-2 py-1 font-800 italic uppercase text-gray-500">${c[4]}</span></td>
                     <td class="p-4 text-right">
-                        <div class="flex justify-end gap-1.5">
-                            <button onclick="abrirEditor('${c[7]}', '${c[5]}', '${c[6]}')" class="border border-black p-2 hover:bg-black hover:text-white transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                            <button onclick="cancelarCita('${c[7]}')" class="border border-red-500 text-red-500 p-2 hover:bg-red-500 hover:text-white transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                        </div>
+                        <button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 p-1.5 hover:bg-red-500 hover:text-white transition-all"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                     </td>
                 </tr>`).join('');
         }
 
-        // --- RENDER CALENDARIO & EQUIPO ---
         function renderizarCalendario() {
             const sel = document.getElementById('cierre-barbero');
             sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
 
             const hoy = new Date().toISOString().split('T')[0];
+            // Solo mostramos los que vienen del servidor para asegurar que están confirmados
             document.getElementById('lista-cierres').innerHTML = todosLosCierres.filter(c => c[0] >= hoy).map(c => `
-                <div class="card-admin p-4 flex justify-between items-center fade-in bg-white">
+                <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black">
                     <div>
                         <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
-                        <p class="text-[9px] font-bold text-gray-400">${formatearFechaElegante(c[0])}</p>
-                        <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase">${c[4]}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase">${c[0]}</p>
+                        <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold">${c[4]}</p>
                     </div>
-                    <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500 hover:bg-red-50 p-2">✕</button>
+                    <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500 font-bold hover:bg-red-50 p-2">✕</button>
                 </div>`).join('');
         }
 
         function renderizarEquipo() {
-            const lista = document.getElementById('lista-barberos');
-            lista.innerHTML = todosLosBarberos.map(b => {
+            document.getElementById('lista-barberos').innerHTML = todosLosBarberos.map(b => {
                 const isOscar = b[0].toLowerCase() === 'óscar' || b[0].toLowerCase() === 'oscar';
                 return `
                 <div class="p-4 bg-white border border-black flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span class="font-800 uppercase text-xs italic">${b[0]}</span>
-                    </div>
-                    ${!isOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-3 py-1 hover:bg-red-500 hover:text-white transition-all uppercase">Eliminar</button>` : `<span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Principal</span>`}
+                    <span class="font-800 uppercase text-xs italic">${b[0]}</span>
+                    ${!isOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-3 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] uppercase text-gray-400 font-bold tracking-widest">Inamovible</span>`}
                 </div>`;
             }).join('');
-        }
-
-        // --- ACCIONES BACKEND ---
-        async function nuevoBarbero() {
-            const nombre = document.getElementById('new-barber-name').value;
-            if(!nombre) return alert("Escribe un nombre");
-            document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveBarber', nombre }) });
-            document.getElementById('new-barber-name').value = '';
-            cargarAgenda();
-        }
-
-        async function borrarBarbero(nombre) {
-            if(!confirm(`¿Seguro que quieres borrar a ${nombre}? Esta acción afectará a las citas asignadas.`)) return;
-            document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre }) });
-            cargarAgenda();
         }
 
         async function guardarBloqueo(tipo) {
@@ -348,16 +262,41 @@
                 fecha: document.getElementById('cierre-fecha').value, 
                 tipo: tipo 
             };
+            
             if(tipo === 'Personalizado') {
                 const h1 = document.getElementById('cierre-desde').value;
                 const h2 = document.getElementById('cierre-hasta').value;
-                if(!h1 || !h2) return alert("Indica la franja horaria");
+                if(h1 >= h2) return alert("La hora de inicio debe ser menor a la de fin");
                 data.tipo = `${h1} - ${h2}`;
             }
+            
             if(!data.fecha) return alert("Selecciona fecha");
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify(data) });
+            cargarAgenda(); // Recarga completa para confirmar sincronización
+        }
+
+        async function borrarBarbero(nombre) {
+            if(!confirm(`¿Eliminar a ${nombre}? Se perderá la sincronización con el front.`)) return;
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre }) });
             cargarAgenda();
+        }
+
+        async function nuevoBarbero() {
+            const nombre = document.getElementById('new-barber-name').value;
+            if(!nombre) return alert("Escribe un nombre");
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveBarber', nombre }) });
+            document.getElementById('new-barber-name').value = '';
+            cargarAgenda();
+        }
+
+        async function cancelarCita(id) { 
+            if(!confirm("¿Anular cita?")) return; 
+            document.getElementById('loading').classList.remove('hidden');
+            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) }); 
+            cargarAgenda(); 
         }
 
         async function borrarCierre(fecha, barbero, tipo) {
@@ -365,72 +304,6 @@
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha, barbero, tipo }) });
             cargarAgenda();
-        }
-
-        // --- UTILIDADES ---
-        function formatearFechaElegante(f) {
-            const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-            const p = f.split("-"); return p.length < 3 ? f : `${parseInt(p[2])} de ${meses[parseInt(p[1])-1]}`;
-        }
-
-        function calcularEstadisticas() {
-            const now = new Date(); let mB = now.getMonth()-1, aB = now.getFullYear(); if(mB<0){mB=11;aB--;}
-            const nombresM = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-            document.getElementById('label-mes-anterior').innerText = `Caja (${nombresM[mB]})`;
-            const validas = todasLasCitas.filter(c => !c[1].startsWith("CANCELADA"));
-            const mesP = validas.filter(c => { const f = new Date(c[5]); return f.getMonth() === mB && f.getFullYear() === aB; });
-            let t = 0; mesP.forEach(c => t += (precios[c[4]] || 0));
-            document.getElementById('caja-mes-anterior').innerText = t + "€";
-            document.getElementById('conteo-mes-anterior').innerText = `${mesP.length} SERVICIOS TOTALES`;
-
-            const rank = {}; validas.forEach(c => { if(!rank[c[1]]) rank[c[1]] = {n:0,e:c[3]}; rank[c[1]].n++; });
-            const top3 = Object.entries(rank).sort((a,b) => b[1].n - a[1].n).slice(0,3);
-            document.getElementById('top-clientes').innerHTML = top3.map(([n,d]) => `
-                <div class="flex justify-between items-center group cursor-pointer border-b pb-1" onclick="abrirFichaCliente('${d.e}','${n}')">
-                    <span class="text-[11px] font-bold uppercase group-hover:underline truncate pr-2">${n}</span>
-                    <span class="text-[9px] bg-black text-white px-2 rounded-full">${d.n}</span>
-                </div>`).join('');
-        }
-
-        // --- EDITOR CITAS ---
-        function cerrarEditor() { document.getElementById('modal-editor').classList.add('hidden'); }
-        async function abrirEditor(id, f, h) { 
-            citaEditandoId = id; 
-            document.getElementById('edit-fecha').value = f; 
-            document.getElementById('modal-editor').classList.remove('hidden'); 
-            await cargarHorasEditor(f, h); 
-        }
-        async function cargarHorasEditor(f, h) {
-            const res = await fetch(`${urlScript}?fecha=${f}`); 
-            const ocupadas = await res.json();
-            const horas = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-            document.getElementById('edit-hora').innerHTML = horas.map(x => `<option value="${x}" ${ocupadas.includes(x) && x!==h ? 'disabled':''} ${x===h ? 'selected':''}>${x}</option>`).join('');
-        }
-        async function guardarCambios() { 
-            const f = document.getElementById('edit-fecha').value, h = document.getElementById('edit-hora').value; 
-            document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'update', eventId: citaEditandoId, nuevaFecha: f, nuevaHora: h }) }); 
-            cerrarEditor(); cargarAgenda(); 
-        }
-        async function cancelarCita(id) { 
-            if(!confirm("¿Anular cita?")) return; 
-            document.getElementById('loading').classList.remove('hidden');
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) }); 
-            cargarAgenda(); 
-        }
-        function abrirFichaCliente(e, n) {
-            if(!e || e === "N/A") return alert("Sin datos de contacto.");
-            const info = todosLosClientes.find(c => c[1].toLowerCase() === e.toLowerCase());
-            document.getElementById('ficha-nombre').innerText = n;
-            document.getElementById('ficha-email').innerText = e;
-            document.getElementById('ficha-notas').value = info ? info[3] : "Sin notas técnicas.";
-            document.getElementById('modal-ficha').classList.remove('hidden');
-        }
-        function cerrarFicha() { document.getElementById('modal-ficha').classList.add('hidden'); }
-        async function guardarNotas() {
-            const email = document.getElementById('ficha-email').innerText, notas = document.getElementById('ficha-notas').value;
-            await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClientNotes', email, notas }) });
-            alert("Ficha actualizada."); cerrarFicha(); cargarAgenda();
         }
     </script>
 </body>
