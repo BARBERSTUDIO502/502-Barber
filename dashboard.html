@@ -10,7 +10,6 @@
         body { font-family: 'Inter', sans-serif; background: #fcfcfc; color: #000; }
         .card-admin { background: white; border: 1px solid #000; }
         
-        /* DISEÑO DE PESTAÑAS MEJORADO */
         .tab-btn { 
             border: 1px solid #e5e7eb; 
             border-bottom: 1px solid black; 
@@ -25,7 +24,8 @@
             color: black !important; 
             font-weight: 800; 
             border: 1px solid black !important; 
-            border-bottom: 2px solid white !important; /* "Borra" la línea de abajo */
+            border-bottom: 2px solid white !important;
+            border-top: 4px solid black !important;
             z-index: 10;
         }
         
@@ -46,28 +46,28 @@
             </div>
             <div class="flex flex-col items-end gap-1">
                 <button onclick="cargarAgenda(true)" class="bg-black text-white px-6 py-2 font-bold text-[10px] uppercase hover:bg-gray-800 transition-all shadow-md">
-                    Sincronizar
+                    Sincronizar Datos
                 </button>
                 <span id="last-update" class="text-[8px] text-gray-400 font-bold uppercase"></span>
             </div>
         </header>
 
         <div class="grid grid-cols-3 gap-2 md:gap-6 mb-10 text-center">
-            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl font-800">0</p><p class="text-[8px] uppercase text-gray-400">Hoy</p></div>
-            <div class="card-admin p-4 bg-black text-white"><p id="ingresos-hoy" class="text-2xl md:text-4xl font-800 italic">0€</p><p class="text-[8px] uppercase text-gray-500">Caja</p></div>
-            <div class="card-admin p-4 border-dashed"><p id="proxima-cita" class="text-2xl md:text-4xl font-800 italic underline">--</p><p class="text-[8px] uppercase text-gray-400">Siguiente</p></div>
+            <div class="card-admin p-4"><p id="total-citas" class="text-2xl md:text-4xl font-800 italic">0</p><p class="text-[8px] uppercase text-gray-400">Citas Hoy</p></div>
+            <div class="card-admin p-4 bg-black text-white shadow-xl"><p id="ingresos-hoy" class="text-2xl md:text-4xl font-800 italic">0€</p><p class="text-[8px] uppercase text-gray-500">Caja Hoy</p></div>
+            <div class="card-admin p-4 border-dashed"><p id="proxima-cita" class="text-2xl md:text-4xl font-800 underline">--</p><p class="text-[8px] uppercase text-gray-400">Siguiente</p></div>
         </div>
 
-        <nav class="flex overflow-x-auto no-scrollbar mb-[-1px]">
-            <button id="main-tab-citas" onclick="switchMainTab('citas')" class="tab-btn px-8 py-4 text-[11px] font-bold uppercase tracking-widest tab-active">Citas</button>
-            <button id="main-tab-calendario" onclick="switchMainTab('calendario')" class="tab-btn px-8 py-4 text-[11px] font-bold uppercase tracking-widest">Calendario</button>
-            <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="tab-btn px-8 py-4 text-[11px] font-bold uppercase tracking-widest">Equipo</button>
+        <nav class="flex mb-6 overflow-x-auto no-scrollbar gap-1">
+            <button id="main-tab-citas" onclick="switchMainTab('citas')" class="tab-btn px-10 py-4 text-[11px] font-bold uppercase tracking-widest tab-active">Citas</button>
+            <button id="main-tab-calendario" onclick="switchMainTab('calendario')" class="tab-btn px-10 py-4 text-[11px] font-bold uppercase tracking-widest">Calendario</button>
+            <button id="main-tab-equipo" onclick="switchMainTab('equipo')" class="tab-btn px-10 py-4 text-[11px] font-bold uppercase tracking-widest">Equipo</button>
         </nav>
 
-        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold">Comunicando...</div>
+        <div id="loading" class="hidden p-10 text-center uppercase text-[10px] text-gray-400 animate-pulse font-bold italic">Sincronizando con la nube...</div>
 
         <section id="section-citas" class="fade-in bg-white border border-black p-4">
-            <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            <div class="flex flex-wrap items-center gap-4 mb-6 px-2 text-[10px] font-bold uppercase text-gray-400">
                 <div class="flex gap-4">
                     <button id="subtab-hoy" onclick="cambiarFiltro('hoy')" class="subtab-active pb-1">Hoy</button>
                     <button id="subtab-futuro" onclick="cambiarFiltro('futuro')" class="pb-1">Próximos</button>
@@ -85,18 +85,18 @@
 
         <section id="section-calendario" class="hidden fade-in bg-white border border-black p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="card-admin p-6 h-fit border-dashed">
-                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2">Marcar Cierre</h4>
+                <div class="card-admin p-6 h-fit border-dashed bg-gray-50/50">
+                    <h4 class="text-xs font-800 uppercase mb-6 border-b-2 border-black pb-2 italic">Bloquear Jornada</h4>
                     <div class="space-y-6">
                         <div>
                             <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Barbero</label>
                             <select id="cierre-barbero" class="w-full py-2 font-bold italic"></select>
                         </div>
                         <div>
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Día del cierre</label>
-                            <input type="date" id="cierre-fecha" class="w-full py-2">
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-1">Fecha</label>
+                            <input type="date" id="cierre-fecha" class="w-full py-2 font-bold">
                         </div>
-                        <div class="space-y-2">
+                        <div class="space-y-2 pt-2">
                             <button onclick="intentarGuardarBloqueo('Mañana')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Mañana (10:00 - 14:30)</button>
                             <button onclick="intentarGuardarBloqueo('Tarde')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Tarde (16:00 - 20:30)</button>
                             <button onclick="intentarGuardarBloqueo('Día Completo')" class="w-full border border-black py-2 text-[9px] font-bold uppercase hover:bg-black hover:text-white transition-all">Todo el Día</button>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <div class="md:col-span-2">
-                    <h4 class="text-[10px] font-800 uppercase mb-4 tracking-widest text-gray-400">Bloqueos Confirmados</h4>
+                    <h4 class="text-[10px] font-800 uppercase mb-4 text-gray-400 tracking-widest italic">Bloqueos Confirmados (Historial Completo)</h4>
                     <div id="lista-cierres" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
                 </div>
             </div>
@@ -113,14 +113,16 @@
         <section id="section-equipo" class="hidden fade-in bg-white border border-black p-6">
             <div class="max-w-2xl">
                 <div class="card-admin p-8 mb-8 border-dashed">
-                    <h4 class="text-xs font-800 uppercase mb-4 italic">Alta de Personal</h4>
+                    <h4 class="text-xs font-800 uppercase mb-4 italic">Alta de Barberos</h4>
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <input type="text" id="new-barber-name" placeholder="Nombre completo" class="flex-1 py-2 text-sm uppercase font-bold">
                         <button onclick="nuevoBarbero()" class="bg-black text-white px-8 py-2 text-[10px] font-bold uppercase">Añadir</button>
                     </div>
-                    <p class="text-[9px] text-gray-400 font-bold uppercase leading-relaxed italic border-l-2 border-gray-200 pl-4">
-                        * IMPORTANTE: Al añadir un segundo barbero, este aparecerá automáticamente en el front del cliente para pedir citas y comprobar disponibilidad de forma sincronizada.
-                    </p>
+                    <div class="border-l-4 border-black pl-4 py-1">
+                        <p class="text-[9px] text-gray-400 font-800 uppercase leading-relaxed italic">
+                            * Los barberos añadidos aparecerán instantáneamente en el formulario de reservas del cliente.
+                        </p>
+                    </div>
                 </div>
                 <div id="lista-barberos" class="space-y-3"></div>
             </div>
@@ -141,12 +143,22 @@
                 document.getElementById('fecha-hasta').value = hoy;
                 document.getElementById('cierre-fecha').value = hoy;
                 
-                // CARGAR DESDE CACHÉ
                 const cache = localStorage.getItem('barber502Cache');
                 if(cache) { procesarDatos(JSON.parse(cache)); }
                 cargarAgenda(false);
-            } else document.body.innerHTML = "Acceso Denegado";
+            } else document.body.innerHTML = "Denegado";
         };
+
+        // --- NORMALIZACIÓN DE FECHAS ---
+        function normalizeDate(dateStr) {
+            if (!dateStr) return "";
+            let d, m, y;
+            if (dateStr.includes('/')) {
+                [d, m, y] = dateStr.split(' ')[0].split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+            return dateStr.split('T')[0];
+        }
 
         async function cargarAgenda(showLoading = true) {
             if(showLoading) document.getElementById('loading').classList.remove('hidden');
@@ -155,7 +167,7 @@
                 const data = await res.json();
                 localStorage.setItem('barber502Cache', JSON.stringify(data));
                 procesarDatos(data);
-                document.getElementById('last-update').innerText = "Actualizado: " + new Date().toLocaleTimeString();
+                document.getElementById('last-update').innerText = "VISTO: " + new Date().toLocaleTimeString();
             } catch (e) { console.error(e); }
             document.getElementById('loading').classList.add('hidden');
         }
@@ -193,39 +205,47 @@
             const validas = todasLasCitas.filter(c => !c[1].includes("CANCELADA"));
             
             let filtered = [];
-            if(filtroCitas === 'hoy') filtered = validas.filter(c => c[5] === hoyStr);
-            else if(filtroCitas === 'futuro') filtered = validas.filter(c => c[5] > hoyStr);
+            if(filtroCitas === 'hoy') filtered = validas.filter(c => normalizeDate(c[5]) === hoyStr);
+            else if(filtroCitas === 'futuro') filtered = validas.filter(c => normalizeDate(c[5]) > hoyStr);
             else if(filtroCitas === 'pasado') {
                 const d = document.getElementById('fecha-desde').value;
                 const h = document.getElementById('fecha-hasta').value;
-                filtered = validas.filter(c => c[5] >= d && c[5] <= h);
+                filtered = validas.filter(c => {
+                    const fc = normalizeDate(c[5]);
+                    return fc >= d && fc <= h;
+                });
             }
-            filtered.sort((a,b) => a[5] === b[5] ? a[6].localeCompare(b[6]) : a[5].localeCompare(b[5]));
+            
+            filtered.sort((a,b) => normalizeDate(a[5]) === normalizeDate(b[5]) ? a[6].localeCompare(b[6]) : normalizeDate(a[5]).localeCompare(normalizeDate(b[5])));
+
+            document.getElementById('total-citas').innerText = validas.filter(c => normalizeDate(c[5]) === hoyStr).length;
 
             document.getElementById('lista-citas').innerHTML = filtered.map(c => `
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-gray-50 transition-all border-b border-gray-100">
                     <td class="p-4 font-800 text-xl italic w-24">${c[6]}</td>
-                    <td class="p-4"><span class="text-[11px] font-800 uppercase">${c[1]}</span><br><span class="text-[9px] text-gray-400 font-bold uppercase">${c[5]} · ${c[8] || 'Óscar Mejicanos'}</span></td>
-                    <td class="p-4 text-right"><button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 p-1 hover:bg-red-500 transition-all">✕</button></td>
-                </tr>`).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin registros</td></tr>`;
+                    <td class="p-4"><span class="text-[11px] font-800 uppercase">${c[1]}</span><br><span class="text-[9px] text-gray-400 font-bold uppercase">${c[5]} · ${c[8] || 'Óscar'}</span></td>
+                    <td class="p-4 text-right"><button onclick="cancelarCita('${c[7]}')" class="text-red-500 border border-red-500 p-1 hover:bg-red-500 hover:text-white transition-all">✕</button></td>
+                </tr>`).join('') || `<tr><td class="p-10 text-center text-xs text-gray-400 uppercase">Sin citas para mostrar</td></tr>`;
         }
 
-        // ORDEN INVERSO SOLICITADO: Del más lejano al más cercano hoy
         function renderizarCalendario() {
             const sel = document.getElementById('cierre-barbero');
             sel.innerHTML = todosLosBarberos.map(b => `<option value="${b[0]}">${b[0]}</option>`).join('');
 
-            const hoy = new Date().toISOString().split('T')[0];
-            const cierres = [...todosLosCierres].filter(c => c[0] >= hoy);
-            
-            // Orden: más lejano primero, hoy al final (Inversa)
-            cierres.sort((a,b) => b[0].localeCompare(a[0]));
+            // ORDEN: De más cercano (hoy) a más lejano (Futuro)
+            const cierres = [...todosLosCierres].sort((a,b) => normalizeDate(a[0]).localeCompare(normalizeDate(b[0])));
 
-            document.getElementById('lista-cierres').innerHTML = cierres.map(c => `
-                <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black">
-                    <div><p class="text-[10px] font-800 uppercase italic">${c[1]}</p><p class="text-[9px] font-bold text-gray-400 uppercase">${c[0]}</p><p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold">${c[4]}</p></div>
-                    <button onclick="borrarCierre('${c[0]}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2">✕</button>
-                </div>`).join('') || `<p class="p-4 text-xs text-gray-400 uppercase">Sin bloqueos confirmados</p>`;
+            document.getElementById('lista-cierres').innerHTML = cierres.map(c => {
+                const fShow = c[0].split(' ')[0];
+                return `
+                <div class="card-admin p-4 flex justify-between items-center bg-white border-l-4 border-l-black shadow-sm">
+                    <div>
+                        <p class="text-[10px] font-800 uppercase italic">${c[1]}</p>
+                        <p class="text-[9px] font-bold text-gray-400 uppercase">${fShow}</p>
+                        <p class="text-[8px] bg-black text-white px-2 mt-1 inline-block uppercase font-bold italic tracking-widest">${c[4]}</p>
+                    </div>
+                    <button onclick="borrarCierre('${fShow}','${c[1]}','${c[4]}')" class="text-red-500 font-bold p-2 hover:bg-red-50">✕</button>
+                </div>`}).join('') || `<p class="p-4 text-xs text-gray-400 uppercase">No hay bloqueos activos</p>`;
         }
 
         function renderizarEquipo() {
@@ -233,9 +253,9 @@
                 const nombre = b[0].toLowerCase();
                 const esOscar = nombre.includes("oscar") || nombre.includes("óscar");
                 return `
-                <div class="p-4 bg-white border border-black flex justify-between items-center">
+                <div class="p-4 bg-white border border-black flex justify-between items-center shadow-sm">
                     <span class="font-800 uppercase text-xs italic">${b[0]}</span>
-                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Borrar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase italic">Propietario</span>`}
+                    ${!esOscar ? `<button onclick="borrarBarbero('${b[0]}')" class="text-[9px] font-bold text-red-500 border border-red-500 px-4 py-1 hover:bg-red-500 hover:text-white uppercase transition-all">Eliminar</button>` : `<span class="text-[8px] font-bold text-gray-300 uppercase tracking-widest border border-gray-100 px-2 py-1">INAMOVIBLE (Fundador)</span>`}
                 </div>`;
             }).join('');
         }
@@ -243,8 +263,8 @@
         async function intentarGuardarBloqueo(tipo) {
             const barber = document.getElementById('cierre-barbero').value;
             const fecha = document.getElementById('cierre-fecha').value;
-            if(!fecha) return alert("Elige fecha");
-            if(!confirm(`¿Bloquear a ${barber} el día ${fecha} (${tipo})?`)) return;
+            if(!fecha) return alert("Selecciona una fecha válida");
+            if(!confirm(`¿Confirmas bloquear la agenda de ${barber} el día ${fecha} (${tipo})?`)) return;
 
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'saveClosure', barbero: barber, fecha, tipo }) });
@@ -261,21 +281,21 @@
         }
 
         async function borrarBarbero(n) {
-            if(!confirm("¿Borrar definitivamente?")) return;
+            if(!confirm(`¿Eliminar definitivamente a ${n}?`)) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteBarber', nombre: n }) });
             cargarAgenda();
         }
 
         async function cancelarCita(id) {
-            if(!confirm("¿Anular cita?")) return;
+            if(!confirm("¿Anular esta cita? El cliente recibirá notificación de cancelación.")) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'cancel', eventId: id }) });
             cargarAgenda();
         }
 
         async function borrarCierre(f, b, t) {
-            if(!confirm("¿Reabrir agenda?")) return;
+            if(!confirm("¿Reabrir esta jornada?")) return;
             document.getElementById('loading').classList.remove('hidden');
             await fetch(urlScript, { method: 'POST', body: JSON.stringify({ action: 'deleteClosure', fecha: f, barbero: b, tipo: t }) });
             cargarAgenda();
