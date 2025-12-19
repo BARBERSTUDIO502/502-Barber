@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
     <title>502 Barber Studio</title>
 
     <style>
@@ -16,6 +14,8 @@
         #vista-exito { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .img-card { background-color: #1a1a1a; position: relative; overflow: hidden; }
+        /* Efecto de carga suave para el select de horas */
+        .loading-select { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-0 md:p-10">
@@ -110,8 +110,12 @@
         const urlScript = 'https://script.google.com/macros/s/AKfycbynkTaK1tjzlvroQQXrOnQlyCFKFWZQ53mkkqzXewQedhOsA70LVkHRlnSF33dbP9hk/exec'; 
 
         const fechaInput = document.getElementById('fecha');
+        const selectHora = document.getElementById('hora');
         const hoy = new Date().toISOString().split('T')[0];
         
+        // --- CACHÉ DE HORARIOS PARA SINCRONIZACIÓN INMEDIATA ---
+        const horariosCache = {};
+
         function formatearFechaElegante(fechaStr) {
             const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
             const partes = fechaStr.split("-");
@@ -125,25 +129,45 @@
         };
 
         async function cargarHorarios(fechaSel) {
-            const select = document.getElementById('hora');
-            select.innerHTML = '<option value="">Consultando...</option>';
+            // Si ya tenemos la fecha en caché, la cargamos al instante
+            if (horariosCache[fechaSel]) {
+                renderizarOpcionesHora(horariosCache[fechaSel], fechaSel);
+                return;
+            }
+
+            selectHora.innerHTML = '<option value="">Cargando...</option>';
+            selectHora.classList.add('loading-select');
+            
             try {
                 const res = await fetch(`${urlScript}?fecha=${fechaSel}`);
                 const ocupadas = await res.json();
-                const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
-                const ahora = new Date();
-                const esHoy = fechaSel === hoy;
-                const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
+                
+                // Guardamos en caché
+                horariosCache[fechaSel] = ocupadas;
+                
+                renderizarOpcionesHora(ocupadas, fechaSel);
+            } catch (e) { 
+                selectHora.innerHTML = '<option value="">Error al cargar</option>'; 
+            } finally {
+                selectHora.classList.remove('loading-select');
+            }
+        }
 
-                select.innerHTML = horarios.map(h => {
-                    const [h_hora, h_min] = h.split(':').map(Number);
-                    const minutosOpcion = (h_hora * 60) + h_min;
-                    const estaOcupada = ocupadas.includes(h);
-                    const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
-                    const deshabilitar = estaOcupada || esPasada;
-                    return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ddd"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
-                }).join('');
-            } catch (e) { select.innerHTML = '<option value="">Error al cargar</option>'; }
+        function renderizarOpcionesHora(ocupadas, fechaSel) {
+            const horarios = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"];
+            const ahora = new Date();
+            const esHoy = fechaSel === hoy;
+            const horaActualMinutos = (ahora.getHours() * 60) + ahora.getMinutes();
+
+            selectHora.innerHTML = horarios.map(h => {
+                const [h_hora, h_min] = h.split(':').map(Number);
+                const minutosOpcion = (h_hora * 60) + h_min;
+                const estaOcupada = ocupadas.includes(h);
+                const esPasada = esHoy && minutosOpcion <= (horaActualMinutos + 15);
+                const deshabilitar = estaOcupada || esPasada;
+                
+                return `<option value="${h}" ${deshabilitar ? 'disabled style="color:#ccc"' : ''}>${h}${estaOcupada ? ' (Ocupado)' : (esPasada ? ' (Pasada)' : '')}</option>`;
+            }).join('');
         }
 
         fechaInput.addEventListener('change', (e) => cargarHorarios(e.target.value));
@@ -155,11 +179,11 @@
                 telefono: document.getElementById('telefono').value.trim(),
                 servicio: document.getElementById('servicio').value,
                 fecha: document.getElementById('fecha').value,
-                hora: document.getElementById('hora').value,
+                hora: selectHora.value,
                 email: document.getElementById('email').value.trim()
             };
 
-            // VALIDACIONES
+            // VALIDACIONES ESTRICTAS
             if (!d.nombre) return alert("Por favor, introduce tu nombre completo.");
             
             const phoneRegex = /^(\+\d+)?\d{9}$/;
@@ -169,16 +193,17 @@
             
             if (!d.fecha) return alert("Por favor, selecciona una fecha.");
             
-            if (!d.hora || d.hora === "" || d.hora.includes("Consultando")) {
+            if (!d.hora || d.hora === "" || d.hora === "Cargando...") {
                 return alert("Por favor, selecciona una hora válida.");
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(d.email)) return alert("Por favor, introduce un correo electrónico válido.");
+            if (!emailRegex.test(d.email)) return alert("Por favor, introduce un correo electrónico válido para tu justificante.");
 
             btn.innerText = "PROCESANDO..."; btn.disabled = true;
             
             try {
+                // El modo 'no-cors' se usa para evitar bloqueos del navegador al redirigir el POST
                 await fetch(urlScript, { method: 'POST', mode: 'no-cors', body: JSON.stringify(d) });
                 
                 const fechaBonita = formatearFechaElegante(d.fecha);
@@ -207,7 +232,7 @@
                 document.getElementById('link-gcal').href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gTitle}&dates=${start}/${end}&location=${gLocation}`;
                 
             } catch (e) { 
-                alert("Hubo un error al conectar."); 
+                alert("Hubo un error al conectar con el servidor."); 
                 btn.disabled = false; 
                 btn.innerText = "Confirmar Reserva";
             }
